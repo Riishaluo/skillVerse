@@ -4,6 +4,7 @@ import axios from "axios"
 import Swal from "sweetalert2"
 import { useNavigate, useLocation, Link } from "react-router-dom"
 import PremiumButton from "../reuseComponent/premiumButton"
+import { useAuth } from "../../../context/authContext"
 
 
 const Navbar = () => {
@@ -11,16 +12,15 @@ const Navbar = () => {
   const [userEmail, setUserEmail] = useState("")
   const [isPremium, setIsPremium] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const { setUser } = useAuth()
   const menuRef = useRef()
   const navigate = useNavigate()
   const location = useLocation()
-  console.log(isPremium)
   useEffect(() => {
     axios
       .get("http://localhost:9999/user/", { withCredentials: true })
       .then((res) => {
         setIsLoggedIn(true)
-        console.log(res.data.user.isPremium)
         setUserEmail(res.data.user.email || "")
         setIsPremium(res.data.user.isPremium || false)
       })
@@ -62,6 +62,7 @@ const Navbar = () => {
 
   const handleLogout = async () => {
     await axios.post("http://localhost:9999/user/logout", {}, { withCredentials: true })
+    setUser(null);
     setIsLoggedIn(false)
     setUserEmail("")
     setMenuOpen(false)
@@ -98,7 +99,9 @@ const Navbar = () => {
         <Link to="/">
           <NavItem icon={<FaHome />} label="Home" />
         </Link>
-        <NavItem icon={<FaUsers />} label="Network" />
+        <Link to='/network'>
+          <NavItem icon={<FaUsers />} label="Network" />
+        </Link>
         <Link to="/post">
           <NavItem icon={<FaPlusCircle />} label="Post" />
         </Link>

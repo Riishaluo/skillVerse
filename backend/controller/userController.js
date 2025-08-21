@@ -5,7 +5,22 @@ const Skill = require('../models/skillSchema')
 const sendOtp = require('../utils/sentOtp')
 const Post = require('../models/postSchema')
 const jwt = require('jsonwebtoken')
+const ForgotPassword = require("../models/forgotSchema");
 
+
+
+
+//frontend auth
+exports.getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    if (!user) return res.status(404).json({ message: "User not found" });
+    console.log(`from getMe....${user}`)
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 
 exports.getRegisterPage = (req, res) => {
@@ -62,7 +77,6 @@ exports.verifyOtpController = async (req, res) => {
     if (user.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' })
 
     if (user.otpExpiresAt < new Date()) {
-      await TempUser.deleteOne({ email })
       return res.status(400).json({ message: 'OTP expired. Please resend.' });
     }
 
@@ -149,7 +163,15 @@ exports.login = async (req, res) => {
       maxAge: 2 * 60 * 60 * 1000
     })
 
-    res.json({ message: "Login successful", token })
+    res.json({
+      message: "Login successful", token,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    })
 
   } catch (error) {
     res.status(500).json({ message: "Server error" })
@@ -211,6 +233,112 @@ exports.resendOtpController = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+exports.sendForgotPasswordOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+
+    await ForgotPassword.findOneAndUpdate(
+      { email },
+      { email, otp, otpExpiresAt, verified: false },
+      { upsert: true, new: true }
+    );
+
+    await sendOtp(email, otp);
+
+    res.status(200).json({ success: true, message: "OTP sent to your email" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// 2. Verify OTP
+exports.verifyForgotPasswordOtp = async (req, res) => {
+  const { email, otp } = req.body;
+
+  try {
+    const temp = await ForgotPassword.findOne({ email });
+    if (!temp) return res.status(404).json({ message: "OTP not found" });
+
+    if (temp.otp !== otp)
+      return res.status(400).json({ message: "Invalid OTP" });
+
+    if (temp.otpExpiresAt < new Date()) {
+      await ForgotPassword.deleteOne({ email });
+      return res.status(400).json({ message: "OTP expired" });
+    }
+
+    temp.verified = true;
+    await temp.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "OTP verified, you may reset your password",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.resetPassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  console.log(email, newPassword)
+
+  try {
+    const temp = await ForgotPassword.findOne({ email });
+    if (!temp || !temp.verified)
+      return res.status(400).json({ message: "OTP verification required" });
+
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+    await user.save();
+
+    await ForgotPassword.deleteOne({ email });
+
+    res.status(200).json({ success: true, message: "Password reset successful" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+exports.resendForgotPasswordOtp = async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const temp = await ForgotPassword.findOne({ email });
+    if (!temp) return res.status(404).json({ message: "No OTP request found" });
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    temp.otp = otp;
+    temp.otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    temp.verified = false;
+    await temp.save();
+
+    await sendOtp(email, otp);
+
+    res.status(200).json({ success: true, message: "OTP resent successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
 
 
 exports.logout = (req, res) => {

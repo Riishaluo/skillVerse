@@ -6,6 +6,8 @@ const postController = require('../controller/postController')
 const multer = require("multer");
 const { storage } = require("../utils/cloudinary");
 const paymentController = require('../controller/paymentController')
+const networkController = require('../controller/networkController')
+
 
 
 
@@ -15,6 +17,7 @@ const upload = multer({ storage });
 
 
 
+router.get("/me", userAuth, authController.getMe);
 
 
 
@@ -38,9 +41,21 @@ router.post("/:postId/comment", userAuth, postController.addComment);
 router.post("/:postId/report", userAuth, postController.addReport);
 
 
-
+//payment
 router.post("/create-order", userAuth, paymentController.createOrder)
 router.post("/verify", userAuth, paymentController.verifyPayment)
+
+
+//network
+router.get("/network", userAuth, networkController.getNetwork);
+router.post("/follow/:userId", userAuth, networkController.followUser);
+
+
+//forgot 
+router.post("/forgot-password", authController.sendForgotPasswordOtp)
+router.post("/verify-forgot-otp", authController.verifyForgotPasswordOtp)
+router.post("/reset-password", authController.resetPassword)
+router.post("/resend-forgot-otp", authController.resendForgotPasswordOtp)
 
 
 module.exports = router;

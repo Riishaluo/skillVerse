@@ -11,14 +11,15 @@ const OtpVerification = () => {
   const inputRefs = useRef([]);
   const location = useLocation();
   const navigate = useNavigate();
-  const email = location.state?.email;
 
-  // Start or resume cooldown on mount
+  const email = location.state?.email;
+  console.log(email)
+  const flow = location.state?.flow || "signup";
+
   useEffect(() => {
     if (!email) return navigate("/signup");
 
     const storedExpiry = localStorage.getItem("otpCooldownExpiry");
-
     if (storedExpiry) {
       const remaining = Math.floor((Number(storedExpiry) - Date.now()) / 1000);
       if (remaining > 0) {
@@ -26,11 +27,9 @@ const OtpVerification = () => {
         return;
       }
     }
-
     startCooldown();
   }, [email, navigate]);
 
-  // Countdown interval
   useEffect(() => {
     if (cooldown <= 0) return;
 
@@ -48,14 +47,12 @@ const OtpVerification = () => {
     return () => clearInterval(interval);
   }, [cooldown]);
 
-  // Start new cooldown
   const startCooldown = () => {
-    const expiry = Date.now() + 30 * 1000; // 30 seconds
+    const expiry = Date.now() + 30 * 1000;
     localStorage.setItem("otpCooldownExpiry", expiry);
     setCooldown(30);
   };
 
-  // Handle input change
   const handleChange = (index, value) => {
     if (/^\d?$/.test(value)) {
       const newOtp = [...otp];
@@ -68,14 +65,12 @@ const OtpVerification = () => {
     }
   };
 
-  // Handle backspace navigation
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       inputRefs.current[index - 1].focus();
     }
   };
 
-  // Submit OTP
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -83,13 +78,20 @@ const OtpVerification = () => {
 
     try {
       const otpString = otp.join("");
-      const { data } = await axios.post(
-        "http://localhost:9999/user/verify-otp",
-        { email, otp: otpString }
-      );
+
+      let endpoint =
+        flow === "forgotPassword"
+          ? "http://localhost:9999/user/verify-forgot-otp"
+          : "http://localhost:9999/user/verify-otp";
+
+      const { data } = await axios.post(endpoint, { email, otp: otpString });
 
       if (data.success) {
-        navigate("/skills-offered", { state: { email } });
+        if (flow === "forgotPassword") {
+          navigate("/reset-password", { state: { email } });
+        } else {
+          navigate("/skills-offered", { state: { email } });
+        }
       } else {
         setMessage(data.message || "Invalid OTP");
       }
@@ -101,14 +103,15 @@ const OtpVerification = () => {
     }
   };
 
-  // Resend OTP
   const handleResendOtp = async () => {
     try {
       setMessage("");
-      const response = await axios.post(
-        "http://localhost:9999/user/resend-otp",
-        { email }
-      );
+      let endpoint =
+        flow === "forgotPassword"
+          ? "http://localhost:9999/user/resend-forgot-otp"
+          : "http://localhost:9999/user/resend-otp";
+          
+      const response = await axios.post(endpoint, { email });
       setMessage(response.data.message);
       startCooldown();
     } catch (error) {
@@ -160,7 +163,9 @@ const OtpVerification = () => {
             <p className="text-gray-500">
               Resend OTP in{" "}
               <span
-                className={cooldown <= 5 ? "text-red-500 font-bold" : "text-indigo-600"}
+                className={
+                  cooldown <= 5 ? "text-red-500 font-bold" : "text-indigo-600"
+                }
               >
                 {cooldown}s
               </span>

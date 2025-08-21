@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/authContext";
 
 const AdminLogin = () => {
   const navigate = useNavigate();
@@ -7,6 +8,8 @@ const AdminLogin = () => {
   const [showPw, setShowPw] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const { setUser } = useAuth()
+
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -36,6 +39,12 @@ const AdminLogin = () => {
         const data = await res.json().catch(() => ({}));
         throw new Error(data?.message || "Invalid credentials");
       }
+
+      const data = await res.json()
+
+      console.log(data.user)
+      setUser(data.user)
+
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");

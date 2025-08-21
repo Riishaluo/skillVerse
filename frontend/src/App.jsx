@@ -10,25 +10,36 @@ import AdminLogin from "./pages/admin/adminLogin";
 import Dashboard from './pages/admin/dashboard'
 import SkillManagement from "./pages/admin/skills";
 import UserManagement from "./pages/admin/userMangement";
+import Network from "./pages/user/network";
+import ForgotPassword from "./pages/user/forgotEmail";
+import ResetPassword from "./pages/user/confirmPass";
+import PrivateRoute from "./middleware/privateRoute";
+import PublicRoute from "./middleware/publicRoute";
 
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/verify-otp" element={<OtpVerification />} />
-        <Route path="/skills-offered" element={<SkillsOffered />} />
-        <Route path="/skills-wanted" element={<SkillsWanted />} />
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/post" element={<CreatePost />} />
-{/* ADMIN */}
-        <Route path="/adminLogin" element={<AdminLogin />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/skills-management" element={<SkillManagement />} />
-        <Route path="/user-management" element={<UserManagement/>} />
+        <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
+        <Route path="/verify-otp" element={<PublicRoute><OtpVerification /></PublicRoute>} />
+        <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+        <Route path="/forgotEmail" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
+        <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
+        <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+
+        <Route path="/" element={<Home />}/>
+        <Route path="/skills-offered" element={<PrivateRoute><SkillsOffered /></PrivateRoute>} />
+        <Route path="/skills-wanted" element={<PrivateRoute><SkillsWanted /></PrivateRoute>} />
+        <Route path="/post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
+        <Route path="/network" element={<PrivateRoute><Network /></PrivateRoute>} />
+
+        <Route path="/dashboard" element={<PrivateRoute role="admin"><Dashboard /></PrivateRoute>} />
+        <Route path
+        ="/skills-management" element={<PrivateRoute role="admin"><SkillManagement /></PrivateRoute>} />
+        <Route path="/user-management" element={<PrivateRoute role="admin"><UserManagement /></PrivateRoute>} />
       </Routes>
+
     </BrowserRouter>
   )
 }

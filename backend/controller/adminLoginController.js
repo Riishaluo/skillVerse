@@ -33,7 +33,15 @@ exports.adminLogin = async (req, res) => {
             maxAge: 2 * 60 * 60 * 1000
         });
 
-        res.json({ message: "Admin login successful", token });
+        res.json({
+            message: "Admin login successful", token,
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role
+            }
+        });
 
     } catch (error) {
         res.status(500).json({ message: "Server error" });

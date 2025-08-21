@@ -29,6 +29,18 @@ router.post("/send-alert/:id",userManagement.sendAlert)
 
 
 
+router.post("/logout", (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+  res.json({ message: "Admin logged out successfully" });
+});
+
+
+
+
 
 
 

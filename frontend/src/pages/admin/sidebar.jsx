@@ -1,23 +1,67 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaTachometerAlt, FaUserCog, FaUsers, FaSignOutAlt, FaBrain } from "react-icons/fa";
+import { useAuth } from "../../context/authContext";
+import axios from "axios"; 
+import Swal from "sweetalert2";
 
 const AdminSidebar = () => {
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
-  const handleLogout = () => {
-    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-    navigate("/admin-login");
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        "http://localhost:9999/admin/logout",
+        {},
+        { withCredentials: true }
+      );
+
+      setUser(null);
+
+
+      Swal.fire({
+        icon: "success",
+        title: "Logged Out",
+        text: "You have been logged out successfully.",
+        toast: true,
+        position: "top-end",
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        background: "#f0f9ff",
+        color: "#0369a1",
+        customClass: {
+          popup: "rounded-xl shadow-lg",
+          title: "font-semibold",
+          icon: "text-green-500",
+        },
+      });
+
+      navigate("/adminLogin");
+    } catch (err) {
+      console.error("Admin logout failed:", err);
+      Swal.fire({
+        icon: "error",
+        title: "Logout Failed",
+        text: "Please try again",
+        toast: true,
+        position: "top-end",
+        timer: 2000,
+        showConfirmButton: false,
+        background: "#fff5f5",
+        color: "#b91c1c",
+        customClass: { popup: "rounded-xl shadow-lg" },
+      });
+    }
   };
 
   return (
     <div className="h-screen w-64 bg-gray-900 text-white flex flex-col shadow-lg">
-      {/* Logo / Header */}
       <div className="p-6 text-2xl font-bold text-center border-b border-gray-700">
         Admin Panel
       </div>
 
-      {/* Menu Items */}
       <nav className="flex-1 p-4 space-y-4">
         <Link
           to="/dashboard"
@@ -44,7 +88,6 @@ const AdminSidebar = () => {
         </Link>
       </nav>
 
-      {/* Logout Button */}
       <div className="p-4 border-t border-gray-700">
         <button
           onClick={handleLogout}
