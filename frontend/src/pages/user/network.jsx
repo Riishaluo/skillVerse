@@ -69,7 +69,6 @@ const Network = () => {
           <p className="text-gray-600">Discover and connect with professionals</p>
         </div>
 
-        {/* Search Section */}
         <div className="mb-10 bg-white rounded-xl p-5 shadow-sm border border-gray-200">
           <div className="flex items-center mb-2">
             <FiSearch className="text-gray-500 mr-2" />
@@ -87,7 +86,6 @@ const Network = () => {
           </div>
         </div>
 
-        {/* Recommended Section */}
         {filteredRecommended.length > 0 && (
           <div className="mb-10">
             <div className="flex items-center mb-4">
@@ -106,13 +104,12 @@ const Network = () => {
           </div>
         )}
 
-        {/* All Users Section */}
         <div>
           <div className="flex items-center mb-4">
             <FiUser className="text-blue-500 mr-2" />
             <h2 className="text-xl font-semibold text-gray-800">All Users</h2>
           </div>
-          
+
           {noResults ? (
             <div className="bg-white rounded-xl p-8 text-center border border-gray-200">
               <FiSearch className="mx-auto text-gray-400 text-4xl mb-3" />
@@ -138,15 +135,14 @@ const Network = () => {
 
 const UserCard = ({ user, currentUser }) => {
   const [showAllSkills, setShowAllSkills] = useState(false)
-  
-  const displayedSkills = showAllSkills 
-    ? user.skillsOffered 
+
+  const displayedSkills = showAllSkills
+    ? user.skillsOffered
     : user.skillsOffered.slice(0, 3)
 
   return (
     <div className="bg-white rounded-xl p-5 border border-gray-200 transition-all hover:shadow-md">
       <div className="flex items-start gap-4">
-        {/* Avatar */}
         <div className="flex-shrink-0">
           <img
             src={user.avatar || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
@@ -155,7 +151,7 @@ const UserCard = ({ user, currentUser }) => {
           />
         </div>
 
-        {/* Info */}
+
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-lg font-semibold text-gray-800 truncate">{user.name}</h3>
@@ -165,8 +161,7 @@ const UserCard = ({ user, currentUser }) => {
               </span>
             )}
           </div>
-          
-          {/* Skills */}
+
           <div className="mb-3">
             <div className="flex flex-wrap gap-2">
               {displayedSkills.map((skill, i) => (
@@ -177,9 +172,9 @@ const UserCard = ({ user, currentUser }) => {
                   {skill}
                 </span>
               ))}
-              
+
               {user.skillsOffered.length > 3 && !showAllSkills && (
-                <button 
+                <button
                   onClick={() => setShowAllSkills(true)}
                   className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 hover:bg-gray-200"
                 >
@@ -190,15 +185,12 @@ const UserCard = ({ user, currentUser }) => {
           </div>
         </div>
       </div>
-
-      {/* Actions */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
         <ConnectButton
           userId={user._id}
-          initialStatus={user.isConnected ? "Connected" : null}
-          className="flex-1 mr-2"
+          initialStatus={user.isFollowing ? "Connected" : null}
         />
-        
+
         {currentUser?.isPremium && (
           <button
             className="flex items-center justify-center p-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors"

@@ -20,10 +20,15 @@ exports.getNetwork = async (req, res) => {
         currentUser.skillsWanted.includes(skill)
       )
 
+      const userObj = {
+        ...user.toObject(),
+        isFollowing: currentUser.following.includes(user._id)
+      }
+
       if (hasMatch) {
-        recommended.push(user)
+        recommended.push(userObj)
       } else {
-        others.push(user)
+        others.push(userObj)
       }
     })
 
@@ -37,6 +42,7 @@ exports.getNetwork = async (req, res) => {
     res.status(500).json({ message: "Server error" })
   }
 }
+
 
 
 exports.followUser = async (req, res) => {

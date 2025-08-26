@@ -15,7 +15,6 @@ exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
-    console.log(`from getMe....${user}`)
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Server error" });
@@ -182,15 +181,15 @@ exports.home = async (req, res) => {
   try {
     const userId = req.user.id
 
-    const user = await User.findById(userId).select("email name isPremium")
-
+    const user = await User.findById(userId).select("email name isPremium avatar")
+    console.log(user)
     if (!user) {
       return res.status(404).json({ message: "User not found" })
     }
 
     const posts = await Post.find()
-      .populate("createdBy", "name email")
-      .populate("comments.commentedBy", "name")
+      .populate("createdBy", "name email avatar")
+      .populate("comments.commentedBy", "name avatar")
       .sort({ createdAt: -1 })
 
     const formattedPosts = posts.map(post => ({
@@ -243,7 +242,7 @@ exports.sendForgotPasswordOtp = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+    const otpExpiresAt = new Date(Date.now() +  30 * 1000); 
 
     await ForgotPassword.findOneAndUpdate(
       { email },

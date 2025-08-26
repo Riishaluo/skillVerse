@@ -5,40 +5,49 @@ const Post = require('../models/postSchema')
 
 
 exports.getMe = async (req, res) => {
-    try {
-        const user = await User.findById(req.user.id)
-            .select("-password")
-            .populate("followers", "name email")
-            .populate("following", "name email");
+  try {
+    const user = await User.findById(req.user.id)
+      .select("-password")
+      .populate("followers", "name email")
+      .populate("following", "name email");
 
-        if (!user) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        const posts = await Post.find({ createdBy: req.user.id })
-            .populate("createdBy", "name email")
-            .populate("comments.commentedBy", "name email")
-            .populate("reports.reportedBy", "name email")
-            .sort({ createdAt: -1 });
-
-        res.json({
-            user: {
-                id: user._id,
-                name: user.name,
-                email: user.email,
-                bio: user.bio || "",
-                skillsOffering: user.skillsOffered || [],
-                followers: user.followers || [],
-                following: user.following || [],
-                avatar:user.avatar,
-                posts
-            },
-
-        });
-    } catch (err) {
-        res.status(500).json({ message: "Server error", error: err.message });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    const posts = await Post.find({ createdBy: req.user.id })
+      .populate("createdBy", "name email")
+      .populate("comments.commentedBy", "name email avatar")
+      .populate("reports.reportedBy", "name email")
+      .sort({ createdAt: -1 })
+      .lean(); 
+
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      likesCount: post.likes?.length || 0,
+      likedByCurrentUser: post.likes?.some(
+        (id) => id.toString() === req.user.id.toString()
+      ),
+    }));
+
+    res.json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio || "",
+        skillsOffering: user.skillsOffered || [],
+        followers: user.followers || [],
+        following: user.following || [],
+        avatar: user.avatar,
+        posts: formattedPosts, 
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
 };
+
 
 
 exports.updateBio = async (req, res) => {

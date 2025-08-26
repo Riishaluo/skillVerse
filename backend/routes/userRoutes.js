@@ -65,7 +65,6 @@ router.get("/profile/:userId", userAuth, profileController.getMe)
 router.put("/update-skills", userAuth, profileController.updateSkills);
 router.put("/update-bio", userAuth, profileController.updateBio);
 router.put("/updateProfilePicture",userAuth, uploadProfile.single("avatar"),profileController.updateProfilePictureController);
-router.get("/recommended", userAuth, profileController.getRecommendations);
 
 
 

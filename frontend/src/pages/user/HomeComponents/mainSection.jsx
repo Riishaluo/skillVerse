@@ -7,11 +7,11 @@ import Swal from "sweetalert2"
 
 const formatCommentTime = (timestamp) => {
     if (!timestamp) return "Just now";
-    
+
     const now = new Date();
     const commentTime = new Date(timestamp);
     const diffInSeconds = Math.floor((now - commentTime) / 1000);
-    
+
     if (diffInSeconds < 60) return "Just now";
     if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
@@ -65,7 +65,8 @@ const PostCard = React.memo(({
     setReportModal,
     reportReason,
     setReportReason
-}) => (
+}) =>
+(
     <article className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-5 flex flex-col gap-5 border border-gray-100">
         <header className="flex justify-between items-start">
             <div className="flex items-center gap-3">
@@ -169,7 +170,17 @@ const PostCard = React.memo(({
                                 className="flex items-start gap-2 animate-fadeIn"
                             >
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
-                                    {c.commentedBy?.name?.charAt(0) || "U"}
+                                    {c.commentedBy?.avatar ? (
+                                        <img
+                                            src={c.commentedBy.avatar}
+                                            alt={c.commentedBy.name}
+                                            className="w-6 h-6 rounded-full object-cover border border-white shadow-sm flex-shrink-0"
+                                        />
+                                    ) : (
+                                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
+                                            {c.commentedBy?.name?.charAt(0) || "U"}
+                                        </div>
+                                    )}
                                 </div>
 
                                 <div className="flex-1 min-w-0">
@@ -223,27 +234,40 @@ const PostCard = React.memo(({
                 </div>
 
                 <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2 scrollbar-thin">
-                    {item.comments.map(c => (
-                        <div
-                            key={c._id}
-                            className="flex items-start gap-2.5 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100"
-                        >
-                            <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium flex-shrink-0">
-                                {c.commentedBy?.name?.charAt(0) || "U"}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <div className="flex items-baseline justify-between">
-                                    <strong className="text-gray-800 text-xs font-medium">
-                                        {c.commentedBy?.name || "User"}
-                                    </strong>
-                                    <span className="text-xs text-gray-400">
-                                        {formatCommentTime(c.createdAt)}
-                                    </span>
+                    {item.comments.map(c => {
+                        console.log("Comment object:", c); // 👈 this will show full comment in dev console
+
+                        return (
+                            <div
+                                key={c._id}
+                                className="flex items-start gap-2.5 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100"
+                            >
+                                {c.commentedBy?.avatar ? (
+                                    <img
+                                        src={c.commentedBy.avatar}
+                                        alt={c.commentedBy.name}
+                                        className="w-7 h-7 rounded-full object-cover border border-white shadow-sm flex-shrink-0"
+                                    />
+                                ) : (
+                                    <div className="w-7 h-7 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
+                                        {c.commentedBy?.name?.charAt(0) || "U"}
+                                    </div>
+                                )}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline justify-between">
+                                        <strong className="text-gray-800 text-xs font-medium">
+                                            {c.commentedBy?.name || "User"}
+                                        </strong>
+                                        <span className="text-xs text-gray-400">
+                                            {formatCommentTime(c.createdAt)}
+                                        </span>
+                                    </div>
+                                    <p className="text-gray-700 text-xs mt-0.5">{c.text}</p>
                                 </div>
-                                <p className="text-gray-700 text-xs mt-0.5">{c.text}</p>
                             </div>
-                        </div>
-                    ))}
+                        )
+                    })}
+
                 </div>
 
                 <div className="mt-3 pt-3 border-t border-gray-200">
@@ -362,15 +386,17 @@ const PostSection = () => {
     const [loading, setLoading] = useState(true)
     const [commentTexts, setCommentTexts] = useState({})
     const [openComments, setOpenComments] = useState(null)
-    
     const [reportModal, setReportModal] = useState(null)
     const [reportReason, setReportReason] = useState("")
+
+    console.log(posts)
 
     useEffect(() => {
         setLoading(true)
         axios
             .get("http://localhost:9999/user/", { withCredentials: true })
             .then(res => {
+                const avatar = res.data.user.avatar
                 const allPosts = res.data.posts || []
                 setPosts(allPosts.filter(p => p.type === (activeTab === "posts" ? "Post" : "Event")))
             })

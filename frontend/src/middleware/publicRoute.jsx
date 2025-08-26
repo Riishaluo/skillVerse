@@ -5,6 +5,8 @@ import { useAuth } from "../context/authContext"
 const PublicRoute = ({ children }) => {
   const { user, loading } = useAuth()
 
+  console.log(user)
+
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
@@ -15,7 +17,7 @@ const PublicRoute = ({ children }) => {
   }
 
   if (user) {
-    if (role === "admin" || user.role === "admin") return <Navigate to="/dashboard" replace />
+    if (user.role === "admin") return <Navigate to="/dashboard" replace />
     return <Navigate to="/" replace />
   }
 

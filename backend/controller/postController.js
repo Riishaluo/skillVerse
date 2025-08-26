@@ -6,23 +6,7 @@ const cloudinary = require('../utils/cloudinary')
 exports.createPost = async (req, res) => {
   try {
     const { type, description } = req.body;
-    let photo = null;
-
-    if (req.file) {
-      const result = await new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-          { folder: "posts" },
-          (error, result) => {
-            if (error) return reject(error);
-            resolve(result);
-          }
-        );
-        stream.end(req.file.buffer);
-      });
-
-      photo = result.secure_url;
-    }
-
+    const photo = req.file ? req.file.path : null;
     const post = new Post({
       createdBy: req.user.id,
       type,
@@ -37,9 +21,11 @@ exports.createPost = async (req, res) => {
     console.error("Error creating post:", error);
     res.status(500).json({ success: false, message: "Error creating post" });
   }
-}
+};
+
 
 exports.toggleLike = async (req, res) => {
+  console.log('j=hitted when likesdd')
   try {
     if (!req.user.id) {
       return res.status(401).json({ message: "Unauthorized" });
@@ -47,19 +33,19 @@ exports.toggleLike = async (req, res) => {
 
     const { postId } = req.params;
     console.log(postId)
-    const userId = req.user.id.toString(); 
+    const userId = req.user.id.toString();
 
 
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
 
-    
+
     const index = post.likes.findIndex(id => id?.toString() === userId);
 
     if (index === -1) {
-      post.likes.push(userId); 
+      post.likes.push(userId);
     } else {
-      post.likes.splice(index, 1); 
+      post.likes.splice(index, 1);
     }
 
     post.likes = post.likes.filter(Boolean);
