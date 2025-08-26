@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { type } = require('os');
 
 const UserSchema = new mongoose.Schema({
   name: String,
@@ -22,9 +23,13 @@ const UserSchema = new mongoose.Schema({
   followers: [
     { type: mongoose.Schema.Types.ObjectId, ref: "User" }
   ],
+
   following: [
     { type: mongoose.Schema.Types.ObjectId, ref: "User" }
   ],
+  bio: {
+    type: String,
+  },
   isPremium: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });

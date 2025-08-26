@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react"
-import { FaComments, FaUserCircle, FaHome, FaBell, FaUsers, FaPlusCircle } from "react-icons/fa"
+import { FaComments, FaUserCircle, FaHome, FaBell, FaUsers, FaPlusCircle,FaSignOutAlt } from "react-icons/fa"
 import axios from "axios"
 import Swal from "sweetalert2"
 import { useNavigate, useLocation, Link } from "react-router-dom"
@@ -130,12 +130,21 @@ const Navbar = () => {
               <p className="text-sm text-gray-500 truncate">{userEmail}</p>
             </div>
             <button
+              onClick={() => navigate("/profile")} // <-- navigate to profile route
+              className="flex items-center gap-2 w-full px-4 py-2 text-left text-blue-600 hover:bg-blue-50 transition-colors"
+            >
+              <FaUserCircle className="text-lg" />
+              <span className="font-medium">Go to Profile</span>
+            </button>
+
+            <button
               onClick={handleLogout}
               className="flex items-center gap-2 w-full px-4 py-2 text-left text-red-600 hover:bg-red-50 transition-colors"
             >
-              <FaUserCircle className="text-lg" />
+              <FaSignOutAlt className="text-lg" />
               <span className="font-medium">Logout</span>
             </button>
+
           </div>
         )}
       </div>

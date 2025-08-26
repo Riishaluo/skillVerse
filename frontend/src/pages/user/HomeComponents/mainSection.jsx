@@ -5,7 +5,6 @@ import LikeButton from "../reuseComponent/like"
 import CommentButton from "../reuseComponent/comment"
 import Swal from "sweetalert2"
 
-// Time formatting function for comments
 const formatCommentTime = (timestamp) => {
     if (!timestamp) return "Just now";
     
@@ -162,7 +161,6 @@ const PostCard = React.memo(({
 
         {openComments !== item._id && (
             <div className="mt-3">
-                {/* Last 2 comments preview */}
                 {item.comments?.length > 0 ? (
                     <div className="space-y-2">
                         {item.comments.slice(-2).map(c => (
@@ -170,7 +168,6 @@ const PostCard = React.memo(({
                                 key={c._id}
                                 className="flex items-start gap-2 animate-fadeIn"
                             >
-                                {/* Avatar with gradient background */}
                                 <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
                                     {c.commentedBy?.name?.charAt(0) || "U"}
                                 </div>
@@ -193,7 +190,6 @@ const PostCard = React.memo(({
                     <p className="text-gray-400 text-xs italic py-1">No comments yet. Be the first to comment!</p>
                 )}
 
-                {/* View all comments button */}
                 {item.comments?.length > 2 && (
                     <button
                         onClick={() => setOpenComments(openComments === item._id ? null : item._id)}
@@ -207,8 +203,6 @@ const PostCard = React.memo(({
                 )}
             </div>
         )}
-
-        {/* Expanded comments section */}
         {openComments === item._id && (
             <div className="mt-4 bg-gray-50 rounded-2xl border border-gray-200 p-4 animate-slideDown">
                 <div className="flex items-center justify-between mb-3">
@@ -228,7 +222,6 @@ const PostCard = React.memo(({
                     </button>
                 </div>
 
-                {/* Comments list */}
                 <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2 scrollbar-thin">
                     {item.comments.map(c => (
                         <div
@@ -253,7 +246,6 @@ const PostCard = React.memo(({
                     ))}
                 </div>
 
-                {/* Add comment section - Avatar removed as requested */}
                 <div className="mt-3 pt-3 border-t border-gray-200">
                     <div className="flex items-center gap-2">
                         <CommentInput

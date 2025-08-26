@@ -8,7 +8,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_SECRET
 })
 
-const storage = new CloudinaryStorage({
+const postStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "posts", 
@@ -16,4 +16,12 @@ const storage = new CloudinaryStorage({
   }
 })
 
-module.exports = cloudinary,storage;
+const profileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "profile_pictures",
+    allowed_formats: ["jpg", "jpeg", "png", "webp"]
+  }
+});
+
+module.exports = { cloudinary, postStorage, profileStorage }

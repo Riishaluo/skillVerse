@@ -15,6 +15,7 @@ import ForgotPassword from "./pages/user/forgotEmail";
 import ResetPassword from "./pages/user/confirmPass";
 import PrivateRoute from "./middleware/privateRoute";
 import PublicRoute from "./middleware/publicRoute";
+import ProfileSection from "./pages/user/profile";
 
 
 function App() {
@@ -28,15 +29,16 @@ function App() {
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
 
-        <Route path="/" element={<Home />}/>
-        <Route path="/skills-offered" element={<PrivateRoute><SkillsOffered /></PrivateRoute>} />
-        <Route path="/skills-wanted" element={<PrivateRoute><SkillsWanted /></PrivateRoute>} />
+        <Route path="/" element={<Home />} />
+        <Route path="/skills-offered" element={<SkillsOffered />} />
+        <Route path="/skills-wanted" element={<SkillsWanted />} />
         <Route path="/post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
         <Route path="/network" element={<PrivateRoute><Network /></PrivateRoute>} />
+        <Route path="/profile" element={<ProfileSection />} />
 
         <Route path="/dashboard" element={<PrivateRoute role="admin"><Dashboard /></PrivateRoute>} />
         <Route path
-        ="/skills-management" element={<PrivateRoute role="admin"><SkillManagement /></PrivateRoute>} />
+          ="/skills-management" element={<PrivateRoute role="admin"><SkillManagement /></PrivateRoute>} />
         <Route path="/user-management" element={<PrivateRoute role="admin"><UserManagement /></PrivateRoute>} />
       </Routes>
 

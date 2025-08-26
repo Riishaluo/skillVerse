@@ -149,11 +149,12 @@ const PremiumButton = ({ userEmail }) => {
         <div className="relative inline-block">
             <button
                 onClick={handleBeforePurchase}
-                className="ml-3 px-3 py-1 bg-gradient-to-r from-blue-600 to-blue-800 text-white font-semibold shadow-lg border border-blue-700 
-        hover:scale-105 hover:from-blue-600 hover:to-blue-700 duration-300 flex items-center gap-2 w-auto rounded-full"
+                className="ml-2 px-2 py-1 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-medium rounded-lg shadow-sm 
+  hover:from-blue-600 hover:to-blue-700 transition-all duration-200"
             >
-                <span>Premium</span>
+                Try Premium
             </button>
+
 
             <PremiumModal
                 isOpen={showModal}

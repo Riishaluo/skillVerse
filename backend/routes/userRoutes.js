@@ -4,14 +4,16 @@ const authController = require('../controller/userController')
 const userAuth = require('../middleware/userAuth')
 const postController = require('../controller/postController')
 const multer = require("multer");
-const { storage } = require("../utils/cloudinary");
 const paymentController = require('../controller/paymentController')
 const networkController = require('../controller/networkController')
+const profileController = require('../controller/profile')
+const {postStorage} = require('../utils/cloudinary')
+const {profileStorage} = require('../utils/cloudinary')
 
 
 
-
-const upload = multer({ storage });
+const uploadPost = multer({ storage: postStorage });
+const uploadProfile = multer({ storage: profileStorage });
 
 
 
@@ -35,7 +37,7 @@ router.post("/logout", authController.logout);
 
 
 //post
-router.post("/createPost", userAuth, upload.single("photo"),postController.createPost);
+router.post("/createPost", userAuth, uploadPost.single("photo"), postController.createPost);
 router.post("/:postId/like", userAuth, postController.toggleLike);
 router.post("/:postId/comment", userAuth, postController.addComment);
 router.post("/:postId/report", userAuth, postController.addReport);
@@ -56,6 +58,15 @@ router.post("/forgot-password", authController.sendForgotPasswordOtp)
 router.post("/verify-forgot-otp", authController.verifyForgotPasswordOtp)
 router.post("/reset-password", authController.resetPassword)
 router.post("/resend-forgot-otp", authController.resendForgotPasswordOtp)
+
+
+//profile
+router.get("/profile/:userId", userAuth, profileController.getMe)
+router.put("/update-skills", userAuth, profileController.updateSkills);
+router.put("/update-bio", userAuth, profileController.updateBio);
+router.put("/updateProfilePicture",userAuth, uploadProfile.single("avatar"),profileController.updateProfilePictureController);
+router.get("/recommended", userAuth, profileController.getRecommendations);
+
 
 
 module.exports = router;
