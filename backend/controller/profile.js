@@ -9,10 +9,10 @@ exports.getMe = async (req, res) => {
     const user = await User.findById(req.user.id)
       .select("-password")
       .populate("followers", "name email")
-      .populate("following", "name email");
+      .populate("following", "name email")
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: "User not found" })
     }
 
     const posts = await Post.find({ createdBy: req.user.id })
@@ -20,7 +20,7 @@ exports.getMe = async (req, res) => {
       .populate("comments.commentedBy", "name email avatar")
       .populate("reports.reportedBy", "name email")
       .sort({ createdAt: -1 })
-      .lean(); 
+      .lean() 
 
     const formattedPosts = posts.map((post) => ({
       ...post,
@@ -28,7 +28,7 @@ exports.getMe = async (req, res) => {
       likedByCurrentUser: post.likes?.some(
         (id) => id.toString() === req.user.id.toString()
       ),
-    }));
+    }))
 
     res.json({
       user: {
@@ -42,29 +42,27 @@ exports.getMe = async (req, res) => {
         avatar: user.avatar,
         posts: formattedPosts, 
       },
-    });
+    })
   } catch (err) {
-    res.status(500).json({ message: "Server error", error: err.message });
+    res.status(500).json({ message: "Server error", error: err.message })
   }
-};
-
-
+}
 
 exports.updateBio = async (req, res) => {
     try {
-        const { bio } = req.body;
+        const { bio } = req.body
 
         const user = await User.findByIdAndUpdate(
             req.user.id,
             { $set: { bio } },
             { new: true }
-        ).select("-password");
+        ).select("-password")
 
-        res.json({ message: "Bio updated successfully", user });
+        res.json({ message: "Bio updated successfully", user })
     } catch (err) {
-        res.status(500).json({ message: "Failed to update bio", error: err.message });
+        res.status(500).json({ message: "Failed to update bio", error: err.message })
     }
-};
+}
 
 exports.updateSkills = async (req, res) => {
     try {
@@ -87,9 +85,7 @@ exports.updateSkills = async (req, res) => {
     } catch (err) {
         res.status(500).json({ message: "Failed to update skills", error: err.message });
     }
-};
-
-
+}
 
 exports.updateProfilePictureController = async (req, res) => {
   try {
@@ -106,9 +102,7 @@ exports.updateProfilePictureController = async (req, res) => {
     console.error(err);
     res.status(500).json({ success: false, message: "Error updating profile picture" });
   }
-};
-
-
+}
 
 exports.getRecommendations = async (req, res) => {
   try {
@@ -135,4 +129,4 @@ exports.getRecommendations = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: "Error fetching recommendations", error });
   }
-};
+}

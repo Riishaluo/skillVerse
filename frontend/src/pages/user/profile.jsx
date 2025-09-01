@@ -132,7 +132,7 @@ const ProfileSection = () => {
             console.error("Error toggling like:", err)
         }
     }
-
+    
     const handleComment = async (itemId, text) => {
         try {
             const res = await axios.post(

@@ -9,7 +9,8 @@ const networkController = require('../controller/networkController')
 const profileController = require('../controller/profile')
 const {postStorage} = require('../utils/cloudinary')
 const {profileStorage} = require('../utils/cloudinary')
-
+const chatController = require('../controller/chatController')
+const User = require('../models/userModel')
 
 
 const uploadPost = multer({ storage: postStorage });
@@ -65,6 +66,11 @@ router.get("/profile/:userId", userAuth, profileController.getMe)
 router.put("/update-skills", userAuth, profileController.updateSkills);
 router.put("/update-bio", userAuth, profileController.updateBio);
 router.put("/updateProfilePicture",userAuth, uploadProfile.single("avatar"),profileController.updateProfilePictureController);
+
+
+//chat section
+router.get("/:userId", userAuth, chatController.getMessages)
+router.post("/send", userAuth, chatController.sendMessage)
 
 
 

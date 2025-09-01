@@ -10,7 +10,6 @@ const ForgotPassword = require("../models/forgotSchema");
 
 
 
-//frontend auth
 exports.getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select("-password");
@@ -259,7 +258,6 @@ exports.sendForgotPasswordOtp = async (req, res) => {
   }
 };
 
-// 2. Verify OTP
 exports.verifyForgotPasswordOtp = async (req, res) => {
   const { email, otp } = req.body;
 
@@ -288,7 +286,6 @@ exports.verifyForgotPasswordOtp = async (req, res) => {
   }
 };
 
-
 exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
 
@@ -315,7 +312,6 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-
 exports.resendForgotPasswordOtp = async (req, res) => {
   const { email } = req.body;
 
@@ -337,8 +333,6 @@ exports.resendForgotPasswordOtp = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
-
 
 exports.logout = (req, res) => {
   res.clearCookie("token", {

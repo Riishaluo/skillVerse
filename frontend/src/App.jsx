@@ -16,10 +16,12 @@ import ResetPassword from "./pages/user/confirmPass";
 import PrivateRoute from "./middleware/privateRoute";
 import PublicRoute from "./middleware/publicRoute";
 import ProfileSection from "./pages/user/profile";
+import ChatDropdown from "./pages/user/chat";
+
 
 
 function App() {
-  return (
+  return (  
     <BrowserRouter>
       <Routes>
         <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
@@ -28,6 +30,9 @@ function App() {
         <Route path="/forgotEmail" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+        <Route path="/chat" element={<ChatDropdown />} />
+
+        
 
         <Route path="/" element={<Home />} />
         <Route path="/skills-offered" element={<SkillsOffered />} />
