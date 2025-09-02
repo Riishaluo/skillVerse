@@ -235,8 +235,6 @@ const PostCard = React.memo(({
 
                 <div className="space-y-2.5 max-h-60 overflow-y-auto pr-2 scrollbar-thin">
                     {item.comments.map(c => {
-                        console.log("Comment object:", c); // 👈 this will show full comment in dev console
-
                         return (
                             <div
                                 key={c._id}
@@ -389,7 +387,6 @@ const PostSection = () => {
     const [reportModal, setReportModal] = useState(null)
     const [reportReason, setReportReason] = useState("")
 
-    console.log(posts)
 
     useEffect(() => {
         setLoading(true)
@@ -482,3 +479,4 @@ const PostSection = () => {
 }
 
 export default PostSection
+

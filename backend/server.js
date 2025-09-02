@@ -10,6 +10,8 @@ const cookieParser = require('cookie-parser');
 const http = require('http')
 const { Server } = require("socket.io");
 const Message = require('./models/messageSchema')
+const chatRoutes = require("./routes/chatRoute");
+const Alert = require("./models/alertSchema")
 
 
 const server = http.createServer(app);
@@ -28,31 +30,62 @@ const io = new Server(server, {
 });
 
 
-// server.js
-io.on("connection", (socket) => {
-  console.log("User connected", socket.id);
 
-  // Join room with userId (after frontend sends it)
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    console.log("User joined room:", userId);
+function initSocket(io) {
+  io.on("connection", (socket) => {
+    console.log("✅ User connected:", socket.id);
+
+    // User joins their private room using userId
+    socket.on("join", (userId) => {
+      socket.join(userId);
+      console.log(`📌 User ${userId} joined their room`);
+    });
+
+    // =======================
+    // 📩 Chat Messages
+    // =======================
+    socket.on("send-message", async (data) => {
+      try {
+        const { sender, receiver, message } = data;
+
+        // Save message to DB
+        const newMessage = await Message.create({ sender, receiver, message });
+
+        // Emit to both sender & receiver rooms
+        io.to(receiver).emit("receive-message", newMessage);
+        io.to(sender).emit("receive-message", newMessage);
+      } catch (error) {
+        console.error("❌ Error saving message:", error.message);
+      }
+    });
+
+    // =======================
+    // 🚨 Alerts
+    // =======================
+    socket.on("send-alert", async (data) => {
+      try {
+        const { sender, receiver, title, description } = data;
+
+        // Save alert to DB
+        const newAlert = await Alert.create({ sender, receiver, title, description });
+
+        // Emit alert to receiver in real-time
+        io.to(receiver).emit("receive-alert", newAlert);
+      } catch (error) {
+        console.error("❌ Error saving alert:", error.message);
+      }
+    });
+
+    // Disconnect
+    socket.on("disconnect", () => {
+      console.log("❌ User disconnected:", socket.id);
+    });
   });
+}
 
-  // Listen for messages (if you want socket-only messaging)
-  socket.on("sendMessage", async ({ senderId, receiverId, message }) => {
-    const newMessage = await Message.create({ sender: senderId, receiver: receiverId, message });
+module.exports = initSocket;
 
-    // Emit to receiver only
-    io.to(receiverId).emit("newMessage", newMessage);
 
-    // Optionally emit back to sender so his UI updates instantly
-    io.to(senderId).emit("newMessage", newMessage);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected", socket.id);
-  });
-});
 
 
 
@@ -63,6 +96,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/skillverse')
 
 app.use('/user',userRoutes)
 app.use('/admin',adminRoutes)
+app.use("/api/messages", chatRoutes);
 
 
 server.listen(9999, () => {

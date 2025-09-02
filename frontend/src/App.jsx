@@ -17,11 +17,12 @@ import PrivateRoute from "./middleware/privateRoute";
 import PublicRoute from "./middleware/publicRoute";
 import ProfileSection from "./pages/user/profile";
 import ChatDropdown from "./pages/user/chat";
+import Alerts from "./pages/user/alert";
 
 
 
 function App() {
-  return (  
+  return (
     <BrowserRouter>
       <Routes>
         <Route path="/signup" element={<PublicRoute><SignupPage /></PublicRoute>} />
@@ -32,13 +33,14 @@ function App() {
         <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
         <Route path="/chat" element={<ChatDropdown />} />
 
-        
+
 
         <Route path="/" element={<Home />} />
         <Route path="/skills-offered" element={<SkillsOffered />} />
         <Route path="/skills-wanted" element={<SkillsWanted />} />
         <Route path="/post" element={<PrivateRoute><CreatePost /></PrivateRoute>} />
         <Route path="/network" element={<PrivateRoute><Network /></PrivateRoute>} />
+        <Route path="/alerts" element={<PrivateRoute><Alerts /></PrivateRoute>} />
         <Route path="/profile" element={<ProfileSection />} />
 
         <Route path="/dashboard" element={<PrivateRoute role="admin"><Dashboard /></PrivateRoute>} />

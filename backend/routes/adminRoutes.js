@@ -3,10 +3,9 @@ const router = express.Router()
 const adminLoginController = require('../controller/adminLoginController')
 const verifyAdmin = require('../middleware/adminAuth')
 const skillController = require('../controller/adminSkillController')
-const userAuth = require('../middleware/userAuth')
 const userManagement = require('../controller/adminUserController')
-
-
+const alertController = require('../controller/alertController')
+const userAuth = require('../middleware/userAuth')
 
 router.post("/adminLogin", adminLoginController.adminLogin)
 router.get("/dashboard", verifyAdmin, (req, res) => {
@@ -25,7 +24,9 @@ router.patch("/skills-management/:id/toggle", skillController.toggleSkill);
 
 router.get("/users",userManagement.showUsers)
 router.put("/block-user/:id",userManagement.blockUser)
-router.post("/send-alert/:id",userManagement.sendAlert)
+router.post("/send-alert/:userId", alertController.sendAlert);
+
+
 
 
 

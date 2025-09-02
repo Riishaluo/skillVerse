@@ -1,4 +1,5 @@
 const User = require("../models/userModel")
+const Alert = require('../models/alertSchema')
 
 exports.getNetwork = async (req, res) => {
   try {
@@ -47,36 +48,44 @@ exports.getNetwork = async (req, res) => {
 
 exports.followUser = async (req, res) => {
   try {
-    const currentUserId = req.user.id
-    const targetUserId = req.params.userId
+    const currentUserId = req.user.id; 
+    const targetUserId = req.params.userId;
 
     if (currentUserId === targetUserId) {
-      return res.status(400).json({ message: "You cannot follow yourself" })
+      return res.status(400).json({ message: "You cannot follow yourself" });
     }
 
-    const currentUser = await User.findById(currentUserId)
-    const targetUser = await User.findById(targetUserId)
+    const currentUser = await User.findById(currentUserId);
+    const targetUser = await User.findById(targetUserId);
 
     if (!targetUser) {
-      return res.status(404).json({ message: "User not found" })
+      return res.status(404).json({ message: "User not found" });
     }
 
-    if (currentUser.following.includes(targetUserId)) {
-      await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } })
-      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } })
+    if (currentUser.following.includes(targetUserId)) {  
+      await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
 
-      return res.json({ message: "Unfollowed successfully", status: "Unfollowed" })
+      return res.json({ message: "Unfollowed successfully", status: "Unfollowed" });
     } else {
-      await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } })
-      await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } })
+      // Follow logic
+      await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
+      await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
 
-      return res.json({ message: "Followed successfully", status: "Connected" })
+      const newAlert = new Alert({
+        user: targetUserId, // the one receiving the alert
+        sender: currentUserId, // who triggered it
+        message: "You got a new connection",
+        type: "follow",
+      });
+      await newAlert.save();
+
+      return res.json({ message: "Followed successfully", status: "Connected" });
     }
   } catch (error) {
-    console.error(error)
-    res.status(500).json({ message: "Server error" })
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
   }
-}
-
+};
 
 

@@ -197,7 +197,7 @@ const UserCard = ({ user, currentUser }) => {
             onClick={() => alert(`Open chat with ${user.name}`)}
             title="Send message"
           >
-            <FiMessageCircle size={18} />
+            
           </button>
         )}
       </div>

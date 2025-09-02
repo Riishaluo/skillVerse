@@ -6,7 +6,10 @@ const UserManagement = () => {
   const [expandedUser, setExpandedUser] = useState(null);
   const [users, setUsers] = useState([]);
   const [page, setPage] = useState(1);
-  const limit = 3; // ✅ show 3 users per page
+  const [alertMessages, setAlertMessages] = useState({}); 
+
+  console.log(users)
+  const limit = 5;
 
   useEffect(() => {
     fetchUsers();
@@ -26,7 +29,7 @@ const UserManagement = () => {
   const toggleBlockUser = async (userId) => {
     try {
       await axios.put(
-        `http://localhost:9999/admin/block-user/${userId}`, // ✅ fixed userId instead of 1
+        `http://localhost:9999/admin/block-user/${userId}`,
         {},
         { withCredentials: true }
       );
@@ -38,18 +41,20 @@ const UserManagement = () => {
 
   const sendAlert = async (userId) => {
     try {
+      const message =
+        alertMessages[userId] || "Please follow community guidelines";
       await axios.post(
         `http://localhost:9999/admin/send-alert/${userId}`,
-        { message: "Please follow community guidelines" },
+        { message },
         { withCredentials: true }
       );
       alert("Alert sent successfully!");
+      setAlertMessages((prev) => ({ ...prev, [userId]: "" })); 
     } catch (err) {
       console.error("Error sending alert:", err);
     }
   };
 
-  // ✅ Pagination logic
   const totalPages = Math.ceil(users.length / limit);
   const startIndex = (page - 1) * limit;
   const currentUsers = users.slice(startIndex, startIndex + limit);
@@ -209,13 +214,28 @@ const UserManagement = () => {
                       </div>
                     </div>
 
-                    <div className="flex justify-end">
-                      <button
-                        onClick={() => sendAlert(user._id)}
-                        className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-medium hover:bg-yellow-600"
-                      >
-                        Send Alert
-                      </button>
+                    {/* Alert Section */}
+                    <div className="mt-3">
+                      <textarea
+                        value={alertMessages[user._id] || ""}
+                        onChange={(e) =>
+                          setAlertMessages((prev) => ({
+                            ...prev,
+                            [user._id]: e.target.value,
+                          }))
+                        }
+                        placeholder="Write an alert message..."
+                        className="w-full p-2 border rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                      />
+
+                      <div className="flex justify-end">
+                        <button
+                          onClick={() => sendAlert(user._id)}
+                          className="px-4 py-2 rounded-lg bg-yellow-500 text-white font-medium hover:bg-yellow-600"
+                        >
+                          Send Alert
+                        </button>
+                      </div>
                     </div>
 
                     <div>
@@ -330,7 +350,7 @@ const UserManagement = () => {
           ))}
         </div>
 
-        {/* ✅ Pagination Controls */}
+  
         {totalPages > 1 && (
           <div className="flex justify-center items-center mt-6 gap-2 flex-wrap">
             <button

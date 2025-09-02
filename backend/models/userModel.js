@@ -30,7 +30,6 @@ const UserSchema = new mongoose.Schema({
   bio: {
     type: String,
   },
-  connections: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
   isPremium: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });

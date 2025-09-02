@@ -46,7 +46,6 @@ exports.showUsers = async (req, res) => {
                 }
             })
         )
-        console.log(userData)
         res.json(userData)
     } catch (err) {
         console.error(err)

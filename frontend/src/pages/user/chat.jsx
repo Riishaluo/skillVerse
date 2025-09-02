@@ -1,84 +1,21 @@
 import React, { useState, useEffect, useRef } from "react";
-import { FaComments } from "react-icons/fa";
+import { FaComments, FaPaperPlane, FaTimes } from "react-icons/fa";
+import { IoIosSend } from "react-icons/io";
 import Swal from "sweetalert2";
-
-// Mock WebSocket service
-const useWebSocket = (userId, receiverId) => {
-  const [messages, setMessages] = useState([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const ws = useRef(null);
-
-  useEffect(() => {
-    if (!userId || !receiverId) return;
-
-    // Simulate WebSocket connection
-    console.log(`Connecting to chat with ${receiverId}`);
-    
-    // Mock connection success
-    const timer = setTimeout(() => {
-      setIsConnected(true);
-      
-      // Load mock previous messages
-      const mockMessages = [
-        { id: 1, sender: receiverId, text: "Hi there!", timestamp: new Date(Date.now() - 3600000) },
-        { id: 2, sender: userId, text: "Hello! How are you?", timestamp: new Date(Date.now() - 3500000) },
-        { id: 3, sender: receiverId, text: "I'm good, thanks!", timestamp: new Date(Date.now() - 3400000) },
-      ];
-      setMessages(mockMessages);
-    }, 500);
-
-    return () => {
-      clearTimeout(timer);
-      if (ws.current) {
-        console.log("Disconnecting from chat");
-        ws.current.close();
-      }
-    };
-  }, [userId, receiverId]);
-
-  const sendMessage = (text) => {
-    if (!isConnected) return false;
-    
-    // Create a new message object
-    const newMessage = {
-      id: Date.now(),
-      sender: userId,
-      text,
-      timestamp: new Date(),
-    };
-    
-    // Add to local messages
-    setMessages(prev => [...prev, newMessage]);
-    
-    // Simulate response after a delay
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now() + 1,
-        sender: receiverId,
-        text: "Thanks for your message!",
-        timestamp: new Date(),
-      }]);
-    }, 1000);
-    
-    return true;
-  };
-
-  return { messages, sendMessage, isConnected };
-};
+import axios from "axios";
+import useWebSocket from "../../hooks/useWebSocket";
 
 const ChatWindow = ({ receiver, onClose, user }) => {
   const [text, setText] = useState("");
   const messagesEndRef = useRef(null);
   const { messages, sendMessage, isConnected } = useWebSocket(user?._id, receiver?._id);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = () => {
     if (text.trim() === "") return;
-    
     const success = sendMessage(text);
     if (success) {
       setText("");
@@ -88,50 +25,60 @@ const ChatWindow = ({ receiver, onClose, user }) => {
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSend();
     }
   };
 
   return (
-    <div className="bg-white border rounded-lg shadow-lg flex flex-col h-96 w-80">
-      <div className="bg-blue-600 text-white p-3 flex justify-between items-center">
-        <div>
-          <span className="font-medium">Chat with {receiver?.name}</span>
-          <div className="text-xs opacity-80 flex items-center">
-            <span className={`h-2 w-2 rounded-full mr-1 ${isConnected ? 'bg-green-400' : 'bg-gray-300'}`}></span>
-            {isConnected ? 'Online' : 'Connecting...'}
+    <div className="bg-white border border-gray-200 rounded-xl shadow-lg flex flex-col h-96 w-80 overflow-hidden">
+      <div className="bg-indigo-600 text-white p-4 flex justify-between items-center">
+        <div className="flex items-center">
+          <div className="relative mr-3">
+            <img 
+              src={receiver?.avatar} 
+              alt={receiver?.name} 
+              className="h-8 w-8 rounded-full object-cover" 
+            />
+            <span className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white ${isConnected ? "bg-green-400" : "bg-gray-300"}`} />
+          </div>
+          <div>
+            <div className="font-medium text-sm">{receiver?.name}</div>
+            <div className="text-xs opacity-90 flex items-center">
+              {isConnected ? "Online" : "Connecting..."}
+            </div>
           </div>
         </div>
         <button 
-          onClick={onClose}
-          className="text-white hover:bg-blue-700 rounded-full h-6 w-6 flex items-center justify-center"
+          onClick={onClose} 
+          className="text-white hover:bg-indigo-700 rounded-full h-7 w-7 flex items-center justify-center transition-colors"
         >
-          ×
+          <FaTimes size={14} />
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-2">
+      <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
         {messages.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
-            {isConnected ? 'Start a conversation!' : 'Connecting...'}
+          <div className="text-center text-gray-500 py-8 flex flex-col items-center">
+            <div className="rounded-full bg-gray-100 p-3 mb-2">
+              <FaComments className="text-gray-400" size={20} />
+            </div>
+            <p className="text-sm">{isConnected ? "Start a conversation!" : "Connecting..."}</p>
           </div>
         ) : (
-          messages.map((msg) => (
-            <div
-              key={msg.id}
-              className={`flex ${msg.sender === user?._id ? 'justify-end' : 'justify-start'}`}
-            >
+          messages.map((msg, idx) => (
+            <div key={idx} className={`flex ${msg.sender === user?._id ? "justify-end" : "justify-start"}`}>
               <div
-                className={`p-2 rounded-lg max-w-xs ${
-                  msg.sender === user?._id
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-800"
+                className={`p-3 rounded-2xl max-w-[70%] shadow-sm ${
+                  msg.sender === user?._id 
+                    ? "bg-indigo-500 text-white rounded-br-none" 
+                    : "bg-white text-gray-800 rounded-bl-none border border-gray-200"
                 }`}
               >
-                {msg.text}
-                <div className={`text-xs mt-1 ${msg.sender === user?._id ? 'text-blue-100' : 'text-gray-500'}`}>
-                  {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                <p className="text-sm">{msg.message}</p>
+                <div className={`text-xs mt-1 ${msg.sender === user?._id ? "text-indigo-100" : "text-gray-500"}`}>
+                  {new Date(msg.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                 </div>
               </div>
             </div>
@@ -140,89 +87,94 @@ const ChatWindow = ({ receiver, onClose, user }) => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="flex border-t">
+      {/* Input */}
+      <div className="flex border-t border-gray-200 p-3 bg-white">
         <input
           type="text"
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Type a message..."
-          className="flex-1 px-3 py-2 outline-none"
+          placeholder={isConnected ? "Type a message..." : "Connecting..."}
+          className="flex-1 px-4 py-2 outline-none text-sm bg-gray-100 rounded-l-full"
           disabled={!isConnected}
         />
         <button
           onClick={handleSend}
           disabled={!isConnected || text.trim() === ""}
-          className="bg-blue-600 text-white px-4 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="bg-indigo-600 text-white px-4 rounded-r-full hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
         >
-          Send
+          <IoIosSend size={18} />
         </button>
       </div>
     </div>
   );
-};
+}
 
 const ChatDropdown = ({ user }) => {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [activeChatUser, setActiveChatUser] = useState(null);
+  const [chatOpen, setChatOpen] = useState(false)
+  const [activeChatUser, setActiveChatUser] = useState(null)
+  const [following, setFollowing] = useState([])
 
-  // Mock following list
-  const following = [
-    { _id: "2", name: "Alice Smith", online: true },
-    { _id: "3", name: "Robert Lee", online: false },
-    { _id: "4", name: "Emma Wilson", online: true },
-  ];
+  useEffect(() => {
+    if (user?._id) {
+      axios
+        .get("http://localhost:9999/user/following", { withCredentials: true })
+        .then((res) => setFollowing(res.data))
+        .catch(() => setFollowing([]))
+    }
+  }, [user?._id])
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('.chat-container')) {
-        setChatOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+      if (!event.target.closest(".chat-container")) setChatOpen(false)
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
 
   return (
     <div className="chat-container flex items-center gap-4 text-gray-700 text-xl relative">
       <button
         onClick={() => {
-          if (user) setChatOpen((prev) => !prev);
-          else Swal.fire({ icon: "info", text: "Please login to use chat" });
+          if (user) setChatOpen((prev) => !prev)
+          else Swal.fire({ icon: "info", text: "Please login to use chat" })
         }}
-        className="hover:text-blue-600 transition p-1 rounded-full hover:bg-blue-50 relative"
+        className="hover:text-indigo-600 transition p-2 rounded-full hover:bg-indigo-50 relative"
       >
         <FaComments />
-        {following.filter(f => f.online).length > 0 && (
-          <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full"></span>
+        {Array.isArray(following?.following) && following.following.filter((f) => f.online).length > 0 && (
+          <span className="absolute -top-1 -right-1 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></span>
         )}
       </button>
 
       {chatOpen && !activeChatUser && (
-        <div className="absolute right-0 top-12 w-60 bg-white shadow-lg border rounded-lg z-50">
-          <h3 className="p-3 border-b font-semibold">Following</h3>
+        <div className="absolute right-0 top-12 w-72 bg-white shadow-lg border border-gray-200 rounded-xl z-50 overflow-hidden">
+          <h3 className="p-4 border-b border-gray-200 font-semibold text-gray-700">Messages</h3>
           <div className="max-h-64 overflow-y-auto">
             {following.length === 0 ? (
-              <div className="px-3 py-4 text-center text-gray-500">
+              <div className="px-4 py-6 text-center text-gray-500 text-sm">
                 You're not following anyone yet
               </div>
             ) : (
-              following.map((f) => (
+              following.following.map((f) => (
                 <div
                   key={f._id}
-                  className="px-3 py-2 cursor-pointer hover:bg-gray-100 flex items-center"
+                  className="px-4 py-3 cursor-pointer hover:bg-gray-50 flex items-center gap-3 transition-colors"
                   onClick={() => {
-                    setActiveChatUser(f);
-                    setChatOpen(false);
+                    setActiveChatUser(f)
+                    setChatOpen(false)
                   }}
                 >
-                  <span className="h-2 w-2 rounded-full mr-2 bg-green-400"></span>
-                  {f.name}
-                  {f.online && (
-                    <span className="ml-auto h-2 w-2 rounded-full bg-green-400"></span>
-                  )}
+                  <div className="relative">
+                    <img src={f.avatar} alt={f.name} className="h-10 w-10 rounded-full object-cover" />
+                    {f.online && (
+                      <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 bg-green-500 rounded-full border-2 border-white"></span>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm text-gray-800 truncate">{f.name}</p>
+                    <p className="text-xs text-gray-500 truncate">{f.online ? "Online" : "Offline"}</p>
+                  </div>
                 </div>
               ))
             )}
@@ -232,11 +184,7 @@ const ChatDropdown = ({ user }) => {
 
       {activeChatUser && (
         <div className="absolute right-0 top-12 z-50">
-          <ChatWindow
-            receiver={activeChatUser}
-            onClose={() => setActiveChatUser(null)}
-            user={user}
-          />
+          <ChatWindow receiver={activeChatUser} onClose={() => setActiveChatUser(null)} user={user} />
         </div>
       )}
     </div>
