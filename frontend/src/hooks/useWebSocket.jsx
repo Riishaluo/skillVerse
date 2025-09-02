@@ -6,7 +6,7 @@ const useWebSocket = (userId, receiverId) => {
     const [messages, setMessages] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
     const socketRef = useRef(null);
-
+    console.log(messages)
     useEffect(() => {
         const fetchMessages = async () => {
             if (!userId || !receiverId) return;

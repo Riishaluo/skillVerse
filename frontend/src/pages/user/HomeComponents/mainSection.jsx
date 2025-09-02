@@ -479,4 +479,3 @@ const PostSection = () => {
 }
 
 export default PostSection
-

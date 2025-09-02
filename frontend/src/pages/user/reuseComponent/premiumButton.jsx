@@ -3,75 +3,58 @@ import axios from "axios";
 import Swal from "sweetalert2";
 
 
+import ReactDOM from "react-dom";
+
 const PremiumModal = ({ isOpen, onClose, onConfirm, userEmail }) => {
-    if (!isOpen) return null;
+  if (!isOpen) return null;
 
-    return (
-        <div className="absolute top-full mt-2 right-0 bg-white rounded-2xl max-w-md w-80 overflow-hidden shadow-xl z-50">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white">
-                <h2 className="text-lg font-bold">Upgrade to Premium 🚀</h2>
-                <p className="mt-1 text-sm opacity-90">Unlock exclusive features</p>
-            </div>
-
-            <div className="p-4 space-y-3">
-                <div className="flex items-start">
-                    <div className="bg-blue-100 p-2 rounded-full mr-3">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-sm">Chat Without Connect</h3>
-                        <p className="text-xs text-gray-600">Message users instantly</p>
-                    </div>
-                </div>
-
-                <div className="flex items-start">
-                    <div className="bg-blue-100 p-2 rounded-full mr-3">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-sm">Premium Event Invitations</h3>
-                        <p className="text-xs text-gray-600">Exclusive invites to events</p>
-                    </div>
-                </div>
-
-                <div className="flex items-start">
-                    <div className="bg-blue-100 p-2 rounded-full mr-3">
-                        <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-sm">Premium Badge</h3>
-                        <p className="text-xs text-gray-600">Showcase with profile badge</p>
-                    </div>
-                </div>
-
-                <div className="bg-yellow-50 p-2 rounded-lg text-xs text-yellow-800 font-medium">
-                    🎁 Special Offer: 20% OFF for first 100 users!
-                </div>
-            </div>
-
-            <div className="bg-gray-50 px-4 py-2 flex justify-end space-x-2">
-                <button
-                    onClick={onClose}
-                    className="px-3 py-1 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition"
-                >
-                    Not Now
-                </button>
-                <button
-                    onClick={onConfirm}
-                    className="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition"
-                >
-                    Proceed
-                </button>
-            </div>
+  return ReactDOM.createPortal(
+    <div className="fixed inset-0 flex items-center justify-center bg-black/30 z-[9999]">
+      <div className="bg-white rounded-2xl max-w-md w-80 overflow-hidden shadow-xl">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-blue-800 p-4 text-white">
+          <h2 className="text-lg font-bold">Upgrade to Premium 🚀</h2>
+          <p className="mt-1 text-sm opacity-90">Unlock exclusive features</p>
         </div>
-    );
+
+        {/* Body */}
+        <div className="p-4 text-sm text-gray-700">
+          <p className="mb-3">
+            With Premium, you get access to:
+          </p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>Unlimited skill connections</li>
+            <li>Priority visibility in searches</li>
+            <li>Exclusive premium-only features</li>
+          </ul>
+          {userEmail && (
+            <p className="mt-3 text-xs text-gray-500">
+              Logged in as: <span className="font-medium">{userEmail}</span>
+            </p>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="bg-gray-50 px-4 py-2 flex justify-end space-x-2">
+          <button
+            onClick={onClose}
+            className="px-3 py-1 text-gray-700 text-sm rounded-lg hover:bg-gray-200 transition"
+          >
+            Not Now
+          </button>
+          <button
+            onClick={onConfirm}
+            className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition"
+          >
+            Proceed
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
 };
+
 
 const PremiumButton = ({ userEmail }) => {
     const [showModal, setShowModal] = useState(false);

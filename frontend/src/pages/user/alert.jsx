@@ -2,11 +2,13 @@ import React, { useEffect, useState } from "react";
 import Navbar from "./HomeComponents/navbar";
 import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
-import { Bell, X, Check } from "lucide-react";
+import { Bell, X, Check, BellRing, Settings, Archive, Filter } from "lucide-react";
 
 const Alerts = () => {
   const [alerts, setAlerts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [filter, setFilter] = useState("all"); // all, unread, admin, follow
+  const [stats, setStats] = useState({ total: 0, unread: 0 });
 
   // Fetch alerts
   useEffect(() => {
@@ -39,6 +41,10 @@ const Alerts = () => {
         }
 
         setAlerts(data);
+        setStats({
+          total: data.length,
+          unread: data.filter(a => !a.isRead).length
+        });
       } catch (err) {
         console.error("Error fetching alerts:", err);
       } finally {
@@ -59,8 +65,29 @@ const Alerts = () => {
       setAlerts((prev) =>
         prev.map((a) => (a._id === alertId ? { ...a, isRead: true } : a))
       );
+      setStats(prev => ({ ...prev, unread: prev.unread - 1 }));
     } catch (err) {
       console.error("Error marking alert as read:", err);
+    }
+  };
+
+  // Mark all as read
+  const markAllAsRead = async () => {
+    try {
+      const unreadAlerts = alerts.filter(a => !a.isRead && a.type === "admin");
+      await Promise.all(
+        unreadAlerts.map((a) =>
+          axios.put(
+            `http://localhost:9999/user/alerts/${a._id}/read`,
+            {},
+            { withCredentials: true }
+          )
+        )
+      );
+      setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
+      setStats(prev => ({ ...prev, unread: 0 }));
+    } catch (err) {
+      console.error("Error marking all alerts as read:", err);
     }
   };
 
@@ -72,111 +99,240 @@ const Alerts = () => {
         { withCredentials: true }
       );
       setAlerts((prev) => prev.filter((a) => a._id !== alertId));
+      setStats(prev => ({ 
+        total: prev.total - 1, 
+        unread: alerts.find(a => a._id === alertId)?.isRead ? prev.unread : prev.unread - 1
+      }));
     } catch (err) {
       console.error("Error clearing alert:", err);
+    }
+  };
+
+  const filteredAlerts = alerts.filter(alert => {
+    switch(filter) {
+      case "unread": return !alert.isRead;
+      case "admin": return alert.type === "admin";
+      case "follow": return alert.type === "follow";
+      default: return true;
+    }
+  });
+
+  const getAlertStyle = (alert) => {
+    switch(alert.type) {
+      case "admin":
+        return {
+          bg: "bg-blue-100",
+          border: "border-blue-200",
+          iconBg: "bg-blue-600",
+          icon: <Settings className="w-5 h-5 text-white" />
+        };
+      case "follow":
+        return {
+          bg: "bg-green-100",
+          border: "border-green-200", 
+          iconBg: "bg-green-600",
+          icon: <Bell className="w-5 h-5 text-white" />
+        };
+      default:
+        return {
+          bg: "bg-gray-100",
+          border: "border-gray-200",
+          iconBg: "bg-gray-600", 
+          icon: <Bell className="w-5 h-5 text-white" />
+        };
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="max-w-2xl mx-auto mt-20 px-4 pb-10">
-        <div className="flex items-center gap-2 mb-6">
-          <Bell className="w-6 h-6 text-indigo-600" />
-          <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+      
+      <div className="ml-64 pr-8 px-4 pt-20 pb-8 sm:px-6 lg:px-8">
+        <div className="mb-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-3">Notifications</h1>
+              <p className="text-lg text-gray-600">
+                Stay updated with your latest activities and system updates
+              </p>
+            </div>
+            {stats.unread > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+              >
+                Mark All Read
+              </button>
+            )}
+          </div>
         </div>
 
-        {isLoading ? (
-          <p className="text-gray-500">Loading alerts...</p>
-        ) : alerts.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
-            <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-            <h3 className="text-lg font-medium text-gray-700">
-              No notifications yet
-            </h3>
-            <p className="text-gray-500 mt-1">
-              We’ll notify you when something arrives
-            </p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {alerts.map((alert) => (
-              <div
-                key={alert._id}
-                className={`flex items-start gap-4 p-4 rounded-xl shadow-sm border transition ${
-                  alert.isRead
-                    ? "bg-white border-gray-200"
-                    : "bg-indigo-50 border-indigo-100"
-                }`}
-              >
-                {/* Avatar */}
-                <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold overflow-hidden">
-                  {alert.type === "admin" ? (
-                    <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
-                      SV
-                    </div>
-                  ) : alert.sender?.avatar ? (
-                    <img
-                      src={alert.sender.avatar}
-                      alt={alert.sender.name}
-                      className="w-10 h-10 object-cover rounded-full"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-indigo-400 flex items-center justify-center">
-                      {alert.sender?.name?.charAt(0).toUpperCase() || "?"}
-                    </div>
-                  )}
-                </div>
-
-                {/* Content */}
-                <div className="flex-1 min-w-0">
-                  {alert.type === "admin" ? (
-                    <>
-                      <p className="text-gray-900 font-semibold">
-                        SkillVerse
-                      </p>
-                      <p className="text-gray-800 text-sm">{alert.message}</p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-gray-900 font-semibold">
-                        {alert.sender?.name || "Someone"}
-                      </p>
-                      <p className="text-gray-800 text-sm">
-                        {alert.message || "You got a new connection"}
-                      </p>
-                    </>
-                  )}
-
-                  <span className="text-xs text-gray-500 block mt-2">
-                    {formatDistanceToNow(new Date(alert.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col gap-2">
-                  {alert.type === "admin" && !alert.isRead && (
-                    <button
-                      onClick={() => markAsRead(alert._id)}
-                      className="p-1.5 text-gray-500 hover:text-indigo-600 hover:bg-indigo-50 rounded-full transition"
-                      title="Mark as read"
-                    >
-                      <Check className="w-4 h-4" />
-                    </button>
-                  )}
-                  <button
-                    onClick={() => clearAlert(alert._id)}
-                    className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full transition"
-                    title="Dismiss"
-                  >
-                  </button>
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <Filter className="text-gray-500" size={20} />
+                  <div className="flex gap-2">
+                    {[
+                      { key: "all", label: "All", count: stats.total },
+                      { key: "admin", label: "System", count: alerts.filter(a => a.type === "admin").length },
+                      { key: "follow", label: "Connections", count: alerts.filter(a => a.type === "follow").length }
+                    ].map((filterOption) => (
+                      <button
+                        key={filterOption.key}
+                        onClick={() => setFilter(filterOption.key)}
+                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          filter === filterOption.key
+                            ? "bg-blue-100 text-blue-700 border border-blue-200"
+                            : "text-gray-600 hover:bg-gray-100"
+                        }`}
+                      >
+                        {filterOption.label}
+                        {filterOption.count > 0 && (
+                          <span className="ml-2 px-2 py-0.5 bg-gray-200 text-gray-600 rounded-full text-xs">
+                            {filterOption.count}
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {isLoading ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
+                <div className="flex justify-center items-center">
+                  <div className="animate-pulse text-gray-500 text-lg">Loading notifications...</div>
+                </div>
+              </div>
+            ) : filteredAlerts.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-12 text-center">
+                <BellRing className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <h3 className="text-xl font-medium text-gray-700 mb-2">
+                  {filter === "all" ? "No notifications yet" : `No ${filter} notifications`}
+                </h3>
+                <p className="text-gray-500">
+                  {filter === "all" 
+                    ? "We'll notify you when something important happens" 
+                    : "Try changing the filter to see more notifications"
+                  }
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredAlerts.map((alert) => {
+                  const alertStyle = getAlertStyle(alert);
+                  return (
+                    <div
+                      key={alert._id}
+                      className={`bg-white rounded-2xl shadow-sm border transition-all hover:shadow-md ${
+                        alert.isRead ? "border-gray-200" : "border-blue-200 ring-2 ring-blue-50"
+                      }`}
+                    >
+                      <div className="p-6">
+                        <div className="flex items-start gap-4">
+                          <div className="flex-shrink-0">
+                            {alert.type === "admin" ? (
+                              <div className={`w-12 h-12 rounded-full ${alertStyle.iconBg} flex items-center justify-center`}>
+                                {alertStyle.icon}
+                              </div>
+                            ) : alert.sender?.avatar ? (
+                              <div className="relative">
+                                <img
+                                  src={alert.sender.avatar}
+                                  alt={alert.sender.name}
+                                  className="w-12 h-12 object-cover rounded-full border-2 border-white shadow-sm"
+                                />
+                                <div className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full ${alertStyle.iconBg} flex items-center justify-center`}>
+                                  {alertStyle.icon}
+                                </div>
+                              </div>
+                            ) : (
+                              <div className={`w-12 h-12 rounded-full ${alertStyle.iconBg} flex items-center justify-center text-white font-bold text-lg`}>
+                                {alert.sender?.name?.charAt(0).toUpperCase() || "?"}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="font-semibold text-gray-900">
+                                    {alert.type === "admin" ? "SkillVerse" : (alert.sender?.name || "Someone")}
+                                  </h3>
+                                  {!alert.isRead && (
+                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                                  )}
+                                </div>
+                                <p className="text-gray-700 mb-2">
+                                  {alert.message || "You got a new connection"}
+                                </p>
+                                <div className="flex items-center gap-4 text-sm text-gray-500">
+                                  <span>
+                                    {formatDistanceToNow(new Date(alert.createdAt), {
+                                      addSuffix: true,
+                                    })}
+                                  </span>
+                                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${alertStyle.bg} ${alertStyle.border.replace('border-', 'text-').replace('-200', '-700')}`}>
+                                    {alert.type === "admin" ? "System" : "Connection"}
+                                  </span>
+                                </div>
+                              </div>
+
+                              <div className="flex items-center gap-1 ml-4">
+                                {alert.type === "admin" && !alert.isRead && (
+                                  <button
+                                    onClick={() => markAsRead(alert._id)}
+                                    className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    title="Mark as read"
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sticky top-24">
+              <div className="flex items-center mb-4">
+                <Bell className="text-blue-500 mr-2" size={20} />
+                <h3 className="font-semibold text-gray-800">Notification Center</h3>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                  <div>
+                    <div className="font-medium text-blue-900 text-sm">Total</div>
+                    <div className="text-xs text-blue-600">All notifications</div>
+                  </div>
+                  <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
+                </div>
+
+                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                  <div>
+                    <div className="font-medium text-green-900 text-sm">Connections</div>
+                    <div className="text-xs text-green-600">New followers</div>
+                  </div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {alerts.filter(a => a.type === "follow").length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

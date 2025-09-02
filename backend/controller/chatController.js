@@ -3,7 +3,6 @@ const Message = require("../models/messageSchema");
 exports.getMessages = async (req, res) => {
   try {
     const { userId, receiverId } = req.params;
-    console.log('kjhgf')
     const messages = await Message.find({
       $or: [
         { sender: userId, receiver: receiverId },
@@ -21,7 +20,7 @@ exports.sendMessage = async (req, res) => {
   try {
     const { receiverId, message } = req.body;
 
-
+    console.log(message)
     const newMessage = await Message.create({
       sender: req.user.id,
       receiver: receiverId,
