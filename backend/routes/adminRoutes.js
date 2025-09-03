@@ -13,7 +13,6 @@ router.get("/dashboard", verifyAdmin, (req, res) => {
 })
 
 
-//skills section
 router.get("/skills-management", skillController.getSkills);
 router.post("/skills-management", skillController.addSkill);
 router.put("/:id", skillController.updateSkill);
@@ -22,11 +21,12 @@ router.patch("/skills-management/:id/toggle", skillController.toggleSkill);
 
 
 
-router.get("/users",userManagement.showUsers)
+
+router.get("/users", userManagement.showUsers)     
+router.get("/users/:id", userManagement.getUserById)
+
 router.put("/block-user/:id",userManagement.blockUser)
 router.post("/send-alert/:userId", alertController.sendAlert);
-
-
 
 
 

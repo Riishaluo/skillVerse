@@ -6,8 +6,7 @@ const crypto = require("crypto");
 const instance = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
-});
-
+})
 
 exports.createOrder = async (req, res) => {
   try {
@@ -36,8 +35,7 @@ exports.createOrder = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Error creating order" });
   }
-};
-
+}
 
 exports.verifyPayment = async (req, res) => {
     console.log('entered to verification')

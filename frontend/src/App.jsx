@@ -18,6 +18,7 @@ import PublicRoute from "./middleware/publicRoute";
 import ProfileSection from "./pages/user/profile";
 import ChatDropdown from "./pages/user/chat";
 import Alerts from "./pages/user/alert";
+import UserDetailed from "./pages/admin/userDetailed";
 
 
 
@@ -47,6 +48,7 @@ function App() {
         <Route path
           ="/skills-management" element={<PrivateRoute role="admin"><SkillManagement /></PrivateRoute>} />
         <Route path="/user-management" element={<PrivateRoute role="admin"><UserManagement /></PrivateRoute>} />
+        <Route path="/admin/users/:userId" element={<UserDetailed />} />
       </Routes>
 
     </BrowserRouter>
