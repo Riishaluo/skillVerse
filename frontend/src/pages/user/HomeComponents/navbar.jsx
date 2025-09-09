@@ -8,8 +8,6 @@ import {
   FaPlusCircle,
   FaSignOutAlt,
   FaSearch,
-  FaBookmark,
-  FaCog
 } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
@@ -31,8 +29,6 @@ const Navbar = ({ children }) => {
   const searchRef = useRef();
   const navigate = useNavigate();
   const location = useLocation();
-
-  console.log(user)
 
   useEffect(() => {
     axios
@@ -240,7 +236,6 @@ const Navbar = ({ children }) => {
         </div>
       </header>
 
-      {/* Mobile Sidebar */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-40 md:hidden">
           <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setMobileMenuOpen(false)}></div>
@@ -276,8 +271,6 @@ const Navbar = ({ children }) => {
                 <MobileNavItem icon={<FaUsers />} label="Network" onClick={() => { navigate("/network"); setMobileMenuOpen(false); }} isActive={location.pathname === "/network"} />
                 <MobileNavItem icon={<FaPlusCircle />} label="Post" onClick={() => { navigate("/post"); setMobileMenuOpen(false); }} isActive={location.pathname === "/post"} />
                 <MobileNavItem icon={<FaBell />} label="Alerts" onClick={() => { navigate("/alerts"); setMobileMenuOpen(false); }} isActive={location.pathname === "/alerts"} />
-                <MobileNavItem icon={<FaBookmark />} label="Saved" onClick={() => { navigate("/saved"); setMobileMenuOpen(false); }} isActive={location.pathname === "/saved"} />
-                <MobileNavItem icon={<FaCog />} label="Settings" onClick={() => { navigate("/settings"); setMobileMenuOpen(false); }} isActive={location.pathname === "/settings"} />
 
                 {user ? (
                   <>

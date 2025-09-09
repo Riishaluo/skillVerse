@@ -2,7 +2,7 @@ import React from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaTachometerAlt, FaUserCog, FaUsers, FaSignOutAlt, FaBrain } from "react-icons/fa";
 import { useAuth } from "../../context/authContext";
-import axios from "axios"; 
+import axios from "axios";
 import Swal from "sweetalert2";
 
 const AdminSidebar = () => {
@@ -57,7 +57,7 @@ const AdminSidebar = () => {
   };
 
   return (
-    <div className="h-screen w-64 bg-gray-900 text-white flex flex-col shadow-lg">
+    <div className="h-full bg-gray-900 text-white flex flex-col shadow-lg">
       <div className="p-6 text-2xl font-bold text-center border-b border-gray-700">
         Admin Panel
       </div>

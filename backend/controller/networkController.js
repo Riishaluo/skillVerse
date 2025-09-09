@@ -48,7 +48,7 @@ exports.getNetwork = async (req, res) => {
 
 exports.followUser = async (req, res) => {
   try {
-    const currentUserId = req.user.id; 
+    const currentUserId = req.user.id;
     const targetUserId = req.params.userId;
 
     if (currentUserId === targetUserId) {
@@ -62,23 +62,28 @@ exports.followUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (currentUser.following.includes(targetUserId)) {  
+    if (currentUser.following.includes(targetUserId)) {
       await User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } });
       await User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } });
 
       return res.json({ message: "Unfollowed successfully", status: "Unfollowed" });
     } else {
-      // Follow logic
       await User.findByIdAndUpdate(currentUserId, { $push: { following: targetUserId } });
       await User.findByIdAndUpdate(targetUserId, { $push: { followers: currentUserId } });
 
+      const io = req.app.get("io");
+
       const newAlert = new Alert({
-        user: targetUserId, // the one receiving the alert
-        sender: currentUserId, // who triggered it
+        user: targetUserId,
+        sender: currentUserId,
         message: "You got a new connection",
         type: "follow",
       });
       await newAlert.save();
+
+      await newAlert.populate("sender", "name avatar");
+
+      io.to(targetUserId).emit("receive-alert", newAlert);
 
       return res.json({ message: "Followed successfully", status: "Connected" });
     }

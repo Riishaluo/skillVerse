@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"
-import { FaUserCircle, FaEllipsisV } from "react-icons/fa"
+import { FaUserCircle, FaEllipsisV, FaRegComment, FaRegHeart, FaHeart, FaTimes } from "react-icons/fa"
+import { IoPaperPlaneOutline } from "react-icons/io5"
 import axios from "axios"
-import LikeButton from "../reuseComponent/like"
-import CommentButton from "../reuseComponent/comment"
 import Swal from "sweetalert2"
 
 const formatCommentTime = (timestamp) => {
@@ -45,10 +44,48 @@ const CommentInput = React.memo(({ itemId, value, onChange }) => {
             placeholder="Write a comment..."
             value={value}
             onChange={handleChange}
-            className="flex-1 rounded-full border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 text-sm transition-colors duration-200 focus:bg-white"
+            className="flex-1 rounded-full border border-gray-200 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 text-sm transition-all duration-200 focus:bg-white placeholder-gray-400"
         />
     )
 })
+
+const LikeButton = ({ initialLiked, initialCount, onLike }) => {
+    const [liked, setLiked] = useState(initialLiked)
+    const [count, setCount] = useState(initialCount)
+
+    const handleClick = () => {
+        const newLiked = !liked
+        setLiked(newLiked)
+        setCount(newLiked ? count + 1 : count - 1)
+        onLike(newLiked)
+    }
+
+    return (
+        <button
+            onClick={handleClick}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors duration-200"
+        >
+            {liked ? (
+                <FaHeart className="text-red-500 w-5 h-5" />
+            ) : (
+                <FaRegHeart className="w-5 h-5" />
+            )}
+            <span className="text-sm font-medium">{count}</span>
+        </button>
+    )
+}
+
+const CommentButton = ({ onClick, count }) => {
+    return (
+        <button
+            onClick={onClick}
+            className="flex items-center gap-1.5 text-gray-500 hover:text-blue-500 transition-colors duration-200"
+        >
+            <FaRegComment className="w-5 h-5" />
+            <span className="text-sm font-medium">{count}</span>
+        </button>
+    )
+}
 
 const PostCard = React.memo(({
     item,
@@ -67,7 +104,7 @@ const PostCard = React.memo(({
     setReportReason
 }) =>
 (
-    <article className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 p-5 flex flex-col gap-5 border border-gray-100">
+    <article className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-5 flex flex-col gap-5 border border-gray-100">
         <header className="flex justify-between items-start">
             <div className="flex items-center gap-3">
                 {item.createdBy?.avatar ? (
@@ -99,7 +136,7 @@ const PostCard = React.memo(({
                     <FaEllipsisV className="text-sm" />
                 </button>
                 {menuOpen === item._id && (
-                    <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-xl shadow-lg z-20 animate-fadeIn overflow-hidden py-1">
+                    <div className="absolute right-0 mt-1 w-36 bg-white border border-gray-200 rounded-lg shadow-lg z-20 animate-fadeIn overflow-hidden py-1">
                         <button
                             onClick={() => setReportModal(item._id)}
                             className="block w-full text-left px-4 py-2.5 text-xs text-gray-700 hover:bg-gray-50 transition-colors duration-150"
@@ -169,15 +206,15 @@ const PostCard = React.memo(({
                                 key={c._id}
                                 className="flex items-start gap-2 animate-fadeIn"
                             >
-                                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
+                                <div className="flex-shrink-0">
                                     {c.commentedBy?.avatar ? (
                                         <img
                                             src={c.commentedBy.avatar}
                                             alt={c.commentedBy.name}
-                                            className="w-6 h-6 rounded-full object-cover border border-white shadow-sm flex-shrink-0"
+                                            className="w-6 h-6 rounded-full object-cover border border-white shadow-sm"
                                         />
                                     ) : (
-                                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm flex-shrink-0">
+                                        <div className="w-6 h-6 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white text-xs font-medium shadow-sm">
                                             {c.commentedBy?.name?.charAt(0) || "U"}
                                         </div>
                                     )}
@@ -215,7 +252,7 @@ const PostCard = React.memo(({
             </div>
         )}
         {openComments === item._id && (
-            <div className="mt-4 bg-gray-50 rounded-2xl border border-gray-200 p-4 animate-slideDown">
+            <div className="mt-4 bg-gray-50 rounded-xl border border-gray-200 p-4 animate-slideDown">
                 <div className="flex items-center justify-between mb-3">
                     <h3 className="text-xs font-semibold text-gray-700 flex items-center uppercase tracking-wide">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1.5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
@@ -227,9 +264,7 @@ const PostCard = React.memo(({
                         onClick={() => setOpenComments(null)}
                         className="text-gray-400 hover:text-gray-600 transition-colors duration-200 p-1 rounded-full hover:bg-gray-200"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                        </svg>
+                        <FaTimes className="h-3.5 w-3.5" />
                     </button>
                 </div>
 
@@ -238,7 +273,7 @@ const PostCard = React.memo(({
                         return (
                             <div
                                 key={c._id}
-                                className="flex items-start gap-2.5 bg-white p-2.5 rounded-xl shadow-sm border border-gray-100"
+                                className="flex items-start gap-2.5 bg-white p-2.5 rounded-lg shadow-sm border border-gray-100"
                             >
                                 {c.commentedBy?.avatar ? (
                                     <img
@@ -306,9 +341,9 @@ const PostCard = React.memo(({
                                     .catch(console.error);
                             }}
                             disabled={!commentTexts[item._id]?.trim()}
-                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full px-3.5 py-2 text-xs font-medium transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
+                            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full p-2.5 text-sm transition-all duration-200 shadow-sm hover:shadow-md flex items-center justify-center"
                         >
-                            Post
+                            <IoPaperPlaneOutline className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
@@ -317,10 +352,10 @@ const PostCard = React.memo(({
 
         {reportModal === item._id && (
             <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
-                <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-5 animate-scaleIn">
-                    <h2 className="text-base font-semibold mb-3 text-gray-800">Report {item.type}</h2>
+                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-5 animate-scaleIn">
+                    <h2 className="text-base font-semibold mb-3 text-gray-800">Report {activeTab === "events" ? "Event" : "Post"}</h2>
                     <textarea
-                        className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-red-300 focus:border-red-300 resize-none"
+                        className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-300 focus:border-transparent resize-none"
                         rows="3"
                         placeholder="Enter reason for reporting..."
                         value={reportReason}
@@ -332,7 +367,7 @@ const PostCard = React.memo(({
                                 setReportReason("")
                                 setReportModal(null)
                             }}
-                            className="px-4 py-2 rounded-xl border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
                         >
                             Cancel
                         </button>
@@ -366,7 +401,7 @@ const PostCard = React.memo(({
                                     })
 
                             }}
-                            className="px-4 py-2 rounded-xl bg-red-500 text-white text-sm hover:bg-red-600 transition-colors duration-200 shadow-sm"
+                            className="px-4 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition-colors duration-200 shadow-sm"
                         >
                             Submit
                         </button>
@@ -420,12 +455,12 @@ const PostSection = () => {
 
     return (
         <section className="w-full max-w-2xl mx-auto mt-6 px-4">
-            <nav className="flex justify-center gap-2 mb-6 bg-white rounded-2xl shadow-sm p-1.5 border border-gray-100">
+            <nav className="flex justify-center gap-2 mb-6 bg-white rounded-xl shadow-sm p-1.5 border border-gray-100">
                 {["posts", "events"].map(tab => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`rounded-xl px-5 py-2 text-sm font-medium transition-all duration-300 ${activeTab === tab
+                        className={`rounded-lg px-5 py-2 text-sm font-medium transition-all duration-300 ${activeTab === tab
                             ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-sm"
                             : "text-gray-500 hover:text-gray-700 hover:bg-gray-50"
                             }`}
@@ -439,12 +474,12 @@ const PostSection = () => {
             {loading ? (
                 <div className="flex flex-col gap-4">
                     {[...Array(3)].map((_, i) => (
-                        <div key={i} className="h-32 rounded-2xl bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse" />
+                        <div key={i} className="h-32 rounded-xl bg-gradient-to-r from-gray-100 to-gray-200 animate-pulse" />
                     ))}
                 </div>
             ) : posts.length === 0 ? (
                 <div className="text-center py-12">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-2xl mb-3">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gray-100 rounded-xl mb-3">
                         <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>

@@ -1,4 +1,3 @@
-// src/component/adminComponents/skillTabs.jsx
 import React, { useState } from "react";
 import SkillList from "./skillList";
 import SkillForm from "./skillForm";
@@ -11,7 +10,6 @@ const SkillTabs = () => {
 
   return (
     <div>
-      {/* Tabs */}
       <div className="flex gap-4 border-b mb-4">
         <button
           onClick={() => setActiveTab("admin")}
@@ -35,7 +33,6 @@ const SkillTabs = () => {
         </button>
       </div>
 
-      {/* Tab Content */}
       {activeTab === "admin" && (
         <div>
           <SkillForm onSuccess={refreshSkills} />

@@ -10,16 +10,18 @@ const http = require("http");
 const { Server } = require("socket.io");
 const Message = require("./models/messageSchema");
 const chatRoutes = require("./routes/chatRoute");
-const Alert = require("./models/alertSchema");
-
-const app = express();
-const server = http.createServer(app);
+const Alert = require("./models/alertSchema")
 
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-app.use(cookieParser());
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
-app.use(express.json());
+const app = express()
+const server = http.createServer(app)
+
+
+app.use("/uploads", express.static(path.join(__dirname, "uploads")))
+app.use(cookieParser())
+app.use(cors({ origin: "http://localhost:5173", credentials: true }))
+app.use(express.json())
+
 
 
 const io = new Server(server, {
@@ -29,6 +31,10 @@ const io = new Server(server, {
   },
 });
 
+app.set("io", io);
+
+const onlineUsers = new Map();
+app.set("onlineUsers", onlineUsers);
 
 function initSocket(io) {
   io.on("connection", (socket) => {
@@ -36,7 +42,8 @@ function initSocket(io) {
 
     socket.on("join", (userId) => {
       socket.join(userId);
-      console.log(` User ${userId} joined their room`);
+      onlineUsers.set(userId.toString(), socket.id);
+      console.log(`✅ User ${userId} joined. Online users:`, onlineUsers);
     });
 
     socket.on("send-message", async (data) => {
@@ -46,11 +53,10 @@ function initSocket(io) {
         const { sender, receiver, message } = data;
 
         const newMessage = await Message.create({ sender, receiver, message });
+        const messageObj = newMessage.toObject();
 
-        console.log("✅ Message saved:", newMessage);
-
-        io.to(receiver).emit("receive-message", newMessage);
-        io.to(sender).emit("receive-message", newMessage);
+        io.to(receiver.toString()).emit("receive-message", messageObj);
+        io.to(sender.toString()).emit("receive-message", messageObj);
       } catch (error) {
         console.error("❌ Error saving message:", error.message);
       }
@@ -73,16 +79,21 @@ function initSocket(io) {
       } catch (error) {
         console.error("❌ Error saving alert:", error.message);
       }
-    })
+    });
 
     socket.on("disconnect", () => {
+      for (let [userId, sockId] of onlineUsers.entries()) {
+        if (sockId === socket.id) {
+          onlineUsers.delete(userId);
+          break;
+        }
+      }
       console.log("❌ User disconnected:", socket.id);
     });
   });
 }
 
 initSocket(io);
-
 
 mongoose
   .connect("mongodb://127.0.0.1:27017/skillverse")

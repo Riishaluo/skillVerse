@@ -11,6 +11,7 @@ const {postStorage} = require('../utils/cloudinary')
 const {profileStorage} = require('../utils/cloudinary')
 const User = require('../models/userModel')
 const alertController = require('../controller/alertController')
+const Message = require("../models/messageSchema");
 
 const uploadPost = multer({ storage: postStorage });
 const uploadProfile = multer({ storage: profileStorage });
@@ -68,17 +69,57 @@ router.put("/update-bio", userAuth, profileController.updateBio);
 router.put("/updateProfilePicture",userAuth, uploadProfile.single("avatar"),profileController.updateProfilePictureController);
 
 
-router.get("/following", userAuth, async (req, res) => {
+router.get("/following-chats", userAuth, async (req, res) => {
   try {
-    if (!req.user) return res.status(401).json({ error: "Not authenticated" })
+    const user = await User.findById(req.user.id).populate("following", "name avatar").lean();
+    const following = user.following || [];
 
-    const user = await User.findById(req.user.id)
-      .populate("following", "name email avatar") 
-      .exec();
+    
+    // Get online users from your socket connections (you'll need to implement this)
+    const onlineUsers = req.app.get('onlineUsers') || new Map();
+    
+    console.log(onlineUsers)
 
-    res.json({ following: user.following });
+    const chats = await Promise.all(
+      following.map(async (f) => {
+        const lastMsg = await Message.findOne({
+          $or: [
+            { sender: req.user.id, receiver: f._id },
+            { sender: f._id, receiver: req.user.id }
+          ]
+        }).sort({ createdAt: -1 }).lean();
+
+        const unreadCount = await Message.countDocuments({
+          sender: f._id,
+          receiver: req.user.id,
+          isRead: false
+        });
+        console.log('here')
+
+        
+        // Check if user is online
+        const isOnline = onlineUsers.has(f._id.toString());
+
+        return {
+          ...f,
+          lastMessage: lastMsg?.message || "",
+          lastTime: lastMsg?.createdAt,
+          unreadCount,
+          online: isOnline
+        };
+      })
+    );
+
+    // Sort: unread first, then by last message
+    chats.sort((a, b) => {
+      if (a.unreadCount && !b.unreadCount) return -1;
+      if (!a.unreadCount && b.unreadCount) return 1;
+      return new Date(b.lastTime || 0) - new Date(a.lastTime || 0);
+    });
+
+    res.json(chats);
   } catch (err) {
-    res.status(500).json({ error: "Failed to fetch following list" });
+    res.status(500).json({ error: err.message });
   }
 });
 

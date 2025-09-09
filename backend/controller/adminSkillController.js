@@ -5,17 +5,18 @@ const User = require('../models/userModel')
 
 exports.getSkills = async (req, res) => {
   try {
-    const adminSkills = await Skill.find({ createdByAdmin: true });
-    const userSkills = await Skill.find({ createdByAdmin: false });
+    const adminSkills = await Skill.find({ createdByAdmin: true })
+    const userSkills = await Skill.find({ createdByAdmin: false })
     res.json({ adminSkills, userSkills });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    res.status(500).json({ message: "Server error" })
   }
 };
 
 exports.addSkill = async (req, res) => {
   try {
     const { name, createdByAdmin } = req.body;
+    
     const newSkill = new Skill({ name, createdByAdmin });
     await newSkill.save();
     res.status(201).json(newSkill);
@@ -25,12 +26,12 @@ exports.addSkill = async (req, res) => {
     }
     res.status(500).json({ message: "Server error" });
   }
-};
+}
 
 exports.updateSkill = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name } = req.body;
+    const { id } = req.params
+    const { name } = req.body
 
     const skill = await Skill.findById(id);
     if (!skill) return res.status(404).json({ message: "Skill not found" });
@@ -54,12 +55,11 @@ exports.updateSkill = async (req, res) => {
     console.error("Error updating skill:", err);
     res.status(500).json({ message: "Server error" });
   }
-};
+}
 
 
 exports.toggleSkill = async (req, res) => {
   try {
-    console.log('jaoajxs')
     const { id } = req.params;
     const skill = await Skill.findById(id);
     if (!skill) return res.status(404).json({ message: "Skill not found" });
