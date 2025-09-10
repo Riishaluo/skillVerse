@@ -17,13 +17,14 @@ const alertSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["admin", "follow"],
+      enum: ["admin", "follow","comment"],
       default: "admin",
     },
     isRead: {
       type: Boolean,
       default: false,
     },
+
   },
   { timestamps: true }
 )

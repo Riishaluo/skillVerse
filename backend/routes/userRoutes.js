@@ -12,6 +12,7 @@ const {profileStorage} = require('../utils/cloudinary')
 const User = require('../models/userModel')
 const alertController = require('../controller/alertController')
 const Message = require("../models/messageSchema");
+const otherProfile = require('../controller/otherProfile')
 
 const uploadPost = multer({ storage: postStorage });
 const uploadProfile = multer({ storage: profileStorage });
@@ -63,7 +64,6 @@ router.post("/resend-forgot-otp", authController.resendForgotPasswordOtp)
 
 
 //profile
-router.get("/profile/:userId", userAuth, profileController.getMe)
 router.put("/update-skills", userAuth, profileController.updateSkills);
 router.put("/update-bio", userAuth, profileController.updateBio);
 router.put("/updateProfilePicture",userAuth, uploadProfile.single("avatar"),profileController.updateProfilePictureController);
@@ -73,12 +73,7 @@ router.get("/following-chats", userAuth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).populate("following", "name avatar").lean();
     const following = user.following || [];
-
-    
-    // Get online users from your socket connections (you'll need to implement this)
     const onlineUsers = req.app.get('onlineUsers') || new Map();
-    
-    console.log(onlineUsers)
 
     const chats = await Promise.all(
       following.map(async (f) => {
@@ -94,10 +89,8 @@ router.get("/following-chats", userAuth, async (req, res) => {
           receiver: req.user.id,
           isRead: false
         });
-        console.log('here')
 
         
-        // Check if user is online
         const isOnline = onlineUsers.has(f._id.toString());
 
         return {
@@ -110,7 +103,6 @@ router.get("/following-chats", userAuth, async (req, res) => {
       })
     );
 
-    // Sort: unread first, then by last message
     chats.sort((a, b) => {
       if (a.unreadCount && !b.unreadCount) return -1;
       if (!a.unreadCount && b.unreadCount) return 1;
@@ -124,9 +116,11 @@ router.get("/following-chats", userAuth, async (req, res) => {
 });
 
 
-// alert
 router.get("/alerts", userAuth,alertController.getUserAlerts)
 router.put("/alerts/:alertId/read",userAuth, alertController.markAsRead)
+
+router.get("/profile/me", userAuth, profileController.getMe)
+router.get("/profile/:id", userAuth, otherProfile.getUserProfile)
 
 
 

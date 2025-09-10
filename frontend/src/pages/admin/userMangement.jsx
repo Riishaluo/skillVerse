@@ -8,7 +8,7 @@ const UserManagement = () => {
   const [page, setPage] = useState(1);
   const navigate = useNavigate();
 
-  const limit = 5;
+  const limit = 10
 
   useEffect(() => {
     fetchUsers();
@@ -16,10 +16,10 @@ const UserManagement = () => {
 
   const fetchUsers = async () => {
     try {
-      const res = await axios.get("http://localhost:9999/admin/users", {
+      const res = await axios.get("http://localhost:9999/admin/users",{
         withCredentials: true,
       });
-      setUsers(res.data);
+      setUsers(res.data)
     } catch (err) {
       console.error("Error fetching users:", err);
     }

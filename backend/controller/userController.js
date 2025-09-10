@@ -138,7 +138,6 @@ exports.getSkills = async (req, res) => {
 }
 
 exports.login = async (req, res) => {
-  console.log('here')
   const { email, password } = req.body
 
   try {
@@ -181,7 +180,6 @@ exports.home = async (req, res) => {
     const userId = req.user.id
 
     const user = await User.findById(userId).select("email name isPremium avatar")
-    console.log(user)
     if (!user) {
       return res.status(404).json({ message: "User not found" })
     }

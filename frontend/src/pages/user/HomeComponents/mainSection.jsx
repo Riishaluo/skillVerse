@@ -3,6 +3,7 @@ import { FaUserCircle, FaEllipsisV, FaRegComment, FaRegHeart, FaHeart, FaTimes }
 import { IoPaperPlaneOutline } from "react-icons/io5"
 import axios from "axios"
 import Swal from "sweetalert2"
+import { Link } from "react-router-dom"
 
 const formatCommentTime = (timestamp) => {
     if (!timestamp) return "Just now";
@@ -108,11 +109,13 @@ const PostCard = React.memo(({
         <header className="flex justify-between items-start">
             <div className="flex items-center gap-3">
                 {item.createdBy?.avatar ? (
-                    <img
-                        src={item.createdBy.avatar}
-                        alt={item.createdBy.name}
-                        className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
-                    />
+                    <Link to={`/profile/${item.createdBy._id}`}>
+                        <img
+                            src={item.createdBy.avatar}
+                            alt={item.createdBy.name}
+                            className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm cursor-pointer"
+                        />
+                    </Link>
                 ) : (
                     <FaUserCircle className="w-10 h-10 text-gray-300" />
                 )}

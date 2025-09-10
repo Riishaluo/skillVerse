@@ -1,6 +1,7 @@
 const Post = require('../models/postSchema')
 const cloudinary = require('../utils/cloudinary')
-
+const Alert = require('../models/alertSchema')
+const User = require('../models/userModel')
 
 
 exports.createPost = async (req, res) => {
@@ -65,25 +66,39 @@ exports.addComment = async (req, res) => {
     const { postId } = req.params;
     const { text } = req.body;
 
-    console.log(postId)
-    console.log(text)
-
     if (!text.trim()) return res.status(400).json({ message: "Comment cannot be empty" });
-    console.log('here')
+
     const post = await Post.findById(postId);
     if (!post) return res.status(404).json({ message: "Post not found" });
-
-    console.log(post)
 
     post.comments.push({ text, commentedBy: req.user.id });
     await post.save();
 
-    const populatedPost = await Post.findById(postId).populate("comments.commentedBy", "name");
+    const commenter = await User.findById(req.user.id).select("name avatar");
+
+    if (post.createdBy._id.toString() !== req.user.id.toString()) {
+      const alert = await Alert.create({
+        user: post.createdBy._id,
+        sender: req.user.id,
+        type: "comment",
+        message: `${commenter.name} commented: "${text}"`,
+      });
+
+      const populatedAlert = await alert.populate("sender", "name avatar");
+
+      const io = req.app.get("io");
+      io.to(post.createdBy._id.toString()).emit("receive-alert", populatedAlert);
+    }
+
+    const populatedPost = await Post.findById(postId)
+      .populate("comments.commentedBy", "name avatar");
+
     res.json({ comments: populatedPost.comments });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
 };
+
 
 
 exports.addReport = async (req, res) => {

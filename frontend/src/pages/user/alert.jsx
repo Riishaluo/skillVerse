@@ -18,13 +18,13 @@ const Alerts = () => {
         const res = await axios.get("http://localhost:9999/user/me", {
           withCredentials: true,
         });
-        setUser(res.data);
+        setUser(res.data)
       } catch (err) {
         console.error("Error fetching user:", err);
       }
     };
     fetchUser();
-  }, []);
+  }, [])
 
   useAlertsSocket(user?._id, (newAlert) => {
     setAlerts((prev) => [newAlert, ...prev]);
@@ -43,8 +43,6 @@ const Alerts = () => {
         });
 
         let data = res.data;
-
-        console.log(data)
 
         const unreadFollow = data.filter(
           (a) => a.type === "follow" && !a.isRead
@@ -144,6 +142,13 @@ const Alerts = () => {
           iconBg: "bg-green-600",
           icon: <Bell className="w-5 h-5 text-white" />,
         };
+      case "comment":
+        return {
+          bg: "bg-yellow-100",
+          border: "border-yellow-200",
+          iconBg: "bg-yellow-600",
+          icon: <Bell className="w-5 h-5 text-white" />,
+        }
       default:
         return {
           bg: "bg-gray-100",
@@ -316,7 +321,9 @@ const Alerts = () => {
                                   >
                                     {alert.type === "admin"
                                       ? "System"
-                                      : "Connection"}
+                                      : alert.type === "follow"
+                                        ? "Connection"
+                                        : "Comment"}
                                   </span>
                                 </div>
                               </div>

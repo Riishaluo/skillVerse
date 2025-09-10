@@ -19,7 +19,7 @@ import ProfileSection from "./pages/user/profile";
 import ChatDropdown from "./pages/user/chat";
 import Alerts from "./pages/user/alert";
 import UserDetailed from "./pages/admin/userDetailed";
-
+import OtherUserProfile from "./pages/user/otherProfile";
 
 
 function App() {
@@ -43,6 +43,7 @@ function App() {
         <Route path="/network" element={<PrivateRoute><Network /></PrivateRoute>} />
         <Route path="/alerts" element={<PrivateRoute><Alerts /></PrivateRoute>} />
         <Route path="/profile" element={<ProfileSection />} />
+        <Route path="/profile/:userId" element={<OtherUserProfile />} />
 
         <Route path="/dashboard" element={<PrivateRoute role="admin"><Dashboard /></PrivateRoute>} />
         <Route path

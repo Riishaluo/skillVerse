@@ -12,7 +12,7 @@ const ProfileSection = () => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const [bio, setBio] = useState("")
+    const [bio, setBio] = useState("")  
     const [isEditingBio, setIsEditingBio] = useState(false)
     const [tempBio, setTempBio] = useState("")
 

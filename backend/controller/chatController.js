@@ -1,6 +1,5 @@
 const Message = require("../models/messageSchema");
 
-// Get messages between two users with unread messages on top
 exports.getMessages = async (req, res) => {
   try {
     const { receiverId } = req.params;
@@ -11,7 +10,7 @@ exports.getMessages = async (req, res) => {
         { sender: receiverId, receiver: req.user.id },
       ],
     })
-      .sort({ isRead: 1, createdAt: 1 }) // unread first, then by time
+      .sort({ isRead: 1, createdAt: 1 }) 
       .lean();
 
     res.json(messages);
@@ -29,10 +28,9 @@ exports.sendMessage = async (req, res) => {
       sender: req.user.id,
       receiver: receiverId,
       message,
-      isRead: false, // new messages are unread
+      isRead: false, 
     });
 
-    // emit message to both sender and receiver
     req.io.to(receiverId.toString()).emit("receive-message", newMessage);
     req.io.to(req.user.id.toString()).emit("receive-message", newMessage);
 
@@ -42,7 +40,6 @@ exports.sendMessage = async (req, res) => {
   }
 };
 
-// Mark messages as read when user opens chat
 exports.markMessagesAsRead = async (req, res) => {
   try {
     const { receiverId } = req.params;
@@ -61,12 +58,10 @@ exports.markMessagesAsRead = async (req, res) => {
 
 exports.getChatsOverview = async (req, res) => {
   try {
-    // Only users you are following
     const following = await User.find({ followers: req.user.id }).lean();
 
     const chats = await Promise.all(
       following.map(async (f) => {
-        // Last message between you and this user
         const lastMsg = await Message.findOne({
           $or: [
             { sender: req.user.id, receiver: f._id },
@@ -74,7 +69,6 @@ exports.getChatsOverview = async (req, res) => {
           ]
         }).sort({ createdAt: -1 }).lean();
 
-        // Unread messages count
         const unreadCount = await Message.countDocuments({
           sender: f._id,
           receiver: req.user.id,
@@ -90,7 +84,6 @@ exports.getChatsOverview = async (req, res) => {
       })
     );
 
-    // Sort: unread first, then by last message time
     chats.sort((a, b) => {
       if (a.unreadCount && !b.unreadCount) return -1;
       if (!a.unreadCount && b.unreadCount) return 1;
