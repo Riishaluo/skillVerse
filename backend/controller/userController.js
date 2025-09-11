@@ -147,6 +147,10 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password)
     if (!isMatch) return res.status(400).json({ message: "password is wrong" })
 
+    if (user.isBlocked) {
+      return res.status(403).json({ message: "Your account has been blocked", isBlocked: true });
+    }
+
     const token = jwt.sign(
       { id: user._id },
       process.env.JWT_SECRET,
@@ -239,7 +243,7 @@ exports.sendForgotPasswordOtp = async (req, res) => {
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = new Date(Date.now() +  30 * 1000); 
+    const otpExpiresAt = new Date(Date.now() + 30 * 1000);
 
     await ForgotPassword.findOneAndUpdate(
       { email },

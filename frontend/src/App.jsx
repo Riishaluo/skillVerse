@@ -23,6 +23,8 @@ import OtherUserProfile from "./pages/user/otherProfile";
 import FeedbackForm from "./pages/user/feedback";
 import AdminFeedback from "./pages/admin/feedbackMangment";
 import About from "./pages/user/about";
+import BlockedPage from "./pages/user/blocked";
+
 
 function App() {
   return (
@@ -35,13 +37,7 @@ function App() {
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
 
-
-
-        <Route path="/chat" element={<ChatDropdown />} />
-        <Route path="/feedback" element={<FeedbackForm />} />
-        <Route path="/feedbackManagement" element={<AdminFeedback />} />
-        <Route path="/about" element={<About />} />
-
+        <Route path="/block" element={<BlockedPage />} />
 
 
         <Route path="/" element={<Home />} />
@@ -52,12 +48,20 @@ function App() {
         <Route path="/alerts" element={<PrivateRoute><Alerts /></PrivateRoute>} />
         <Route path="/profile" element={<ProfileSection />} />
         <Route path="/profile/:userId" element={<OtherUserProfile />} />
+        <Route path="/feedback" element={ <PrivateRoute> <FeedbackForm /></PrivateRoute>} />
+        <Route path="/about" element={ <PrivateRoute>  <About /></PrivateRoute>} />
+        <Route path="/chat" element={ <PrivateRoute>  <ChatDropdown /> </PrivateRoute>  } />
+
 
         <Route path="/dashboard" element={<PrivateRoute role="admin"><Dashboard /></PrivateRoute>} />
         <Route path
           ="/skills-management" element={<PrivateRoute role="admin"><SkillManagement /></PrivateRoute>} />
         <Route path="/user-management" element={<PrivateRoute role="admin"><UserManagement /></PrivateRoute>} />
-        <Route path="/admin/users/:userId" element={<UserDetailed />} />
+        <Route path="/admin/users/:userId" element={ <PrivateRoute> <UserDetailed /> </PrivateRoute> } />
+        <Route path="/feedbackManagement" element={<PrivateRoute> <AdminFeedback /> </PrivateRoute>} />
+
+
+
       </Routes>
 
     </BrowserRouter>

@@ -73,7 +73,6 @@ const Network = () => {
           </p>
         </div>
 
-        {/* Search Section */}
         <div className="mb-12">
           <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200">
             <div className="flex items-center mb-4">
@@ -81,19 +80,18 @@ const Network = () => {
               <h2 className="text-xl font-semibold text-gray-800">Find Connections</h2>
             </div>
             <div className="relative">
-              <FiSearch className="absolute left-4 top-4 text-gray-400" size={20} />
+  
               <input
                 type="text"
                 placeholder="Search by name or skills..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
+                className="w-full pl-5 pr-4 py-4 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg"
               />
             </div>
           </div>
         </div>
 
-        {/* Recommended Section */}
         {filteredRecommended.length > 0 && (
           <div className="mb-12">
             <div className="flex items-center mb-6">
@@ -112,7 +110,6 @@ const Network = () => {
           </div>
         )}
 
-        {/* All Users Section */}
         <div>
           <div className="flex items-center mb-6">
             <FiUser className="text-blue-500 mr-3" size={24} />

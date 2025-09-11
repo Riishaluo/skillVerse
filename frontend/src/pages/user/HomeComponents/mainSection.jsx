@@ -90,7 +90,7 @@ const ShareButton = ({ post }) => {
     const copyLink = () => {
         navigator.clipboard.writeText(post.photo);
         setCopied(true)
-        Swal.fire({ icon: "success", title: "Image Link Copied!", timer: 1200, showConfirmButton: false });
+        Swal.fire({ icon: "success", title: "Image Link Copied!", confirmButtonText: "OK", showConfirmButton: true });
         setShareOpen(false);
 
         setTimeout(() => setCopied(false), 2000);
