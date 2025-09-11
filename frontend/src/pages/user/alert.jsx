@@ -306,7 +306,6 @@ const Alerts = () => {
                                     className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                                     title="Mark as read"
                                   >
-                                    <Check className="w-4 h-4" />
                                   </button>
                                 )}
                               </div>

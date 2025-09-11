@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaTachometerAlt, FaUserCog, FaUsers, FaSignOutAlt, FaBrain } from "react-icons/fa";
+import { FaTachometerAlt, FaUserCog, FaUsers, FaSignOutAlt, FaBrain, FaCommentDots } from "react-icons/fa";
 import { useAuth } from "../../context/authContext";
 import axios from "axios";
 import Swal from "sweetalert2";
@@ -85,6 +85,14 @@ const AdminSidebar = () => {
         >
           <FaUsers />
           <span>User Management</span>
+        </Link>
+
+        <Link
+          to="/feedbackManagement"
+          className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-700 transition"
+        >
+          <FaCommentDots />
+          <span>Feedback Management</span>
         </Link>
       </nav>
 

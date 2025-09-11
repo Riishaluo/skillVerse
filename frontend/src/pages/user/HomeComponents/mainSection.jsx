@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useRef } from "react"
-import { FaUserCircle, FaEllipsisV, FaRegComment, FaRegHeart, FaHeart, FaTimes } from "react-icons/fa"
+import { FaUserCircle, FaEllipsisV, FaRegComment, FaRegHeart, FaHeart, FaTimes, FaShareAlt } from "react-icons/fa"
 import { IoPaperPlaneOutline } from "react-icons/io5"
+import { MessageCircle, Copy } from "lucide-react"
 import axios from "axios"
 import Swal from "sweetalert2"
 import { Link } from "react-router-dom"
 
 const formatCommentTime = (timestamp) => {
-    if (!timestamp) return "Just now";
-
-    const now = new Date();
-    const commentTime = new Date(timestamp);
-    const diffInSeconds = Math.floor((now - commentTime) / 1000);
-
-    if (diffInSeconds < 60) return "Just now";
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    return `${Math.floor(diffInSeconds / 86400)}d ago`;
-};
+    if (!timestamp) return "Just now"
+    const now = new Date()
+    const commentTime = new Date(timestamp)
+    const diffInSeconds = Math.floor((now - commentTime) / 1000)
+    if (diffInSeconds < 60) return "Just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    return `${Math.floor(diffInSeconds / 86400)}d ago`
+}
 
 const CommentInput = React.memo(({ itemId, value, onChange }) => {
     const inputRef = useRef(null)
@@ -66,11 +65,7 @@ const LikeButton = ({ initialLiked, initialCount, onLike }) => {
             onClick={handleClick}
             className="flex items-center gap-1.5 text-gray-500 hover:text-red-500 transition-colors duration-200"
         >
-            {liked ? (
-                <FaHeart className="text-red-500 w-5 h-5" />
-            ) : (
-                <FaRegHeart className="w-5 h-5" />
-            )}
+            {liked ? <FaHeart className="text-red-500 w-5 h-5" /> : <FaRegHeart className="w-5 h-5" />}
             <span className="text-sm font-medium">{count}</span>
         </button>
     )
@@ -88,6 +83,86 @@ const CommentButton = ({ onClick, count }) => {
     )
 }
 
+const ShareButton = ({ post }) => {
+    const [shareOpen, setShareOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
+
+    const copyLink = () => {
+        navigator.clipboard.writeText(post.photo);
+        setCopied(true)
+        Swal.fire({ icon: "success", title: "Image Link Copied!", timer: 1200, showConfirmButton: false });
+        setShareOpen(false);
+
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    const shareWhatsApp = () => {
+        const text = encodeURIComponent(post.description + "\n" + post.photo);
+        window.open(`https://wa.me/?text=${text}`, "_blank");
+        setShareOpen(false);
+    };
+
+
+    return (
+        <div className="relative">
+            <button
+                onClick={() => setShareOpen(!shareOpen)}
+                className="group relative flex items-center justify-center w-10 h-10 rounded-full bg-white/80 backdrop-blur-sm border border-gray-200/50 text-gray-600 hover:text-emerald-600 hover:bg-emerald-50 hover:border-emerald-200 transition-all duration-300 ease-out hover:scale-105 active:scale-95 shadow-sm hover:shadow-md"
+            >
+                <FaShareAlt size={18} className="transition-transform duration-300 group-hover:rotate-12" />
+
+
+                <div className="absolute inset-0 rounded-full bg-emerald-400/20 scale-0 group-hover:scale-100 transition-transform duration-300 ease-out -z-10"></div>
+            </button>
+
+            {shareOpen && (
+                <div className="absolute right-0 mt-3 w-48 bg-white/95 backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-xl z-20 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+                    <div className="h-0.5 bg-gradient-to-r from-emerald-400 via-blue-500 to-purple-500"></div>
+
+                    <div className="py-2">
+                        <button
+                            onClick={shareWhatsApp}
+                            className="group flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-emerald-50 transition-all duration-200 hover:text-green-700"
+                        >
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100 text-green-600 mr-3 group-hover:bg-green-200 group-hover:scale-110 transition-all duration-200">
+                                <MessageCircle size={16} />
+                            </div>
+                            <span className="font-medium">Share to WhatsApp</span>
+                        </button>
+
+                        <div className="mx-4 my-1 h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+
+                        <button
+                            onClick={copyLink}
+                            className="group flex items-center w-full text-left px-4 py-3 text-sm text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 transition-all duration-200 hover:text-blue-700"
+                        >
+                            <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 mr-3 group-hover:bg-blue-200 group-hover:scale-110 transition-all duration-200">
+                                {copied ? (
+                                    <Check size={16} className="text-green-600" />
+                                ) : (
+                                    <Copy size={16} />
+                                )}
+                            </div>
+                            <span className="font-medium">
+                                {copied ? 'Link Copied!' : 'Copy Image Link'}
+                            </span>
+                        </button>
+                    </div>
+
+                    <div className="h-1 bg-gradient-to-r from-transparent via-gray-100 to-transparent"></div>
+                </div>
+            )}
+
+            {shareOpen && (
+                <div
+                    className="fixed inset-0 z-10"
+                    onClick={() => setShareOpen(false)}
+                ></div>
+            )}
+        </div>
+    );
+}
+
 const PostCard = React.memo(({
     item,
     activeTab,
@@ -103,8 +178,7 @@ const PostCard = React.memo(({
     setReportModal,
     reportReason,
     setReportReason
-}) =>
-(
+}) => (
     <article className="bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 p-5 flex flex-col gap-5 border border-gray-100">
         <header className="flex justify-between items-start">
             <div className="flex items-center gap-3">
@@ -121,7 +195,7 @@ const PostCard = React.memo(({
                 )}
                 <div>
                     <Link to={`/profile/${item.createdBy._id}`}>
-                    <h3 className="font-semibold text-gray-900 text-sm">{item.createdBy?.name || "Unknown User"}</h3>
+                        <h3 className="font-semibold text-gray-900 text-sm">{item.createdBy?.name || "Unknown User"}</h3>
                     </Link>
                     <time
                         dateTime={item.createdAt}
@@ -132,7 +206,8 @@ const PostCard = React.memo(({
                     </time>
                 </div>
             </div>
-            <div className="relative">
+            <div className="flex items-center gap-2 relative">
+                <ShareButton post={item} />
                 <button
                     onClick={() => setMenuOpen(menuOpen === item._id ? null : item._id)}
                     className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-100 transition-all duration-200"
@@ -178,11 +253,7 @@ const PostCard = React.memo(({
                             setPosts(posts =>
                                 posts.map(p =>
                                     p._id === item._id
-                                        ? {
-                                            ...p,
-                                            likesCount: res.data.likesCount,
-                                            likedByCurrentUser: res.data.liked,
-                                        }
+                                        ? { ...p, likesCount: res.data.likesCount, likedByCurrentUser: res.data.liked }
                                         : p
                                 )
                             )
@@ -190,7 +261,6 @@ const PostCard = React.memo(({
                         .catch(console.error)
                 }}
             />
-
             <CommentButton
                 onClick={() => {
                     setOpenComments(openComments === item._id ? null : item._id)
@@ -356,23 +426,36 @@ const PostCard = React.memo(({
         )}
 
         {reportModal === item._id && (
-            <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4 backdrop-blur-sm">
-                <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-5 animate-scaleIn">
-                    <h2 className="text-base font-semibold mb-3 text-gray-800">Report {activeTab === "events" ? "Event" : "Post"}</h2>
-                    <textarea
-                        className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-2 focus:ring-red-300 focus:border-transparent resize-none"
-                        rows="3"
-                        placeholder="Enter reason for reporting..."
-                        value={reportReason}
-                        onChange={e => setReportReason(e.target.value)}
-                    />
-                    <div className="flex justify-end gap-2 mt-4">
+            <div className="fixed inset-0 bg-gradient-to-br from-black/40 via-black/50 to-black/60 flex items-center justify-center z-50 px-4 backdrop-blur-md animate-in fade-in duration-200">
+                <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-2xl max-w-md w-full p-8 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 border border-white/20 ring-1 ring-gray-200/50">
+                    <div className="flex items-center mb-6">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mr-3 shadow-lg">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                            </svg>
+                        </div>
+                        <h2 className="text-xl font-bold text-gray-900 tracking-tight">
+                            Report {activeTab === "events" ? "Event" : "Post"}
+                        </h2>
+                    </div>
+
+                    <div className="mb-6">
+                        <textarea
+                            className="w-full border-2 border-gray-200 rounded-2xl p-4 text-sm focus:ring-4 focus:ring-red-500/20 focus:border-red-500 resize-none transition-all duration-300 placeholder:text-gray-500 bg-gray-50/50 hover:bg-white hover:border-gray-300"
+                            rows="4"
+                            placeholder="Please describe the reason for reporting..."
+                            value={reportReason}
+                            onChange={e => setReportReason(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="flex justify-end gap-3">
                         <button
                             onClick={() => {
                                 setReportReason("")
                                 setReportModal(null)
                             }}
-                            className="px-4 py-2 rounded-lg border border-gray-200 text-sm text-gray-600 hover:bg-gray-50 transition-colors duration-200"
+                            className="px-6 py-3 rounded-2xl border-2 border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:bg-gray-100 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                         >
                             Cancel
                         </button>
@@ -404,11 +487,10 @@ const PostCard = React.memo(({
                                             confirmButtonText: "Try Again"
                                         })
                                     })
-
                             }}
-                            className="px-4 py-2 rounded-lg bg-red-500 text-white text-sm hover:bg-red-600 transition-colors duration-200 shadow-sm"
+                            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white text-sm font-semibold hover:from-red-600 hover:to-red-700 active:from-red-700 active:to-red-800 transition-all duration-200 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] ring-2 ring-red-500/20"
                         >
-                            Submit
+                            Submit Report
                         </button>
                     </div>
                 </div>
@@ -427,13 +509,11 @@ const PostSection = () => {
     const [reportModal, setReportModal] = useState(null)
     const [reportReason, setReportReason] = useState("")
 
-
     useEffect(() => {
         setLoading(true)
         axios
             .get("http://localhost:9999/user/", { withCredentials: true })
             .then(res => {
-                const avatar = res.data.user.avatar
                 const allPosts = res.data.posts || []
                 setPosts(allPosts.filter(p => p.type === (activeTab === "posts" ? "Post" : "Event")))
             })

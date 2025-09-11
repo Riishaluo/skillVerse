@@ -20,7 +20,9 @@ import ChatDropdown from "./pages/user/chat";
 import Alerts from "./pages/user/alert";
 import UserDetailed from "./pages/admin/userDetailed";
 import OtherUserProfile from "./pages/user/otherProfile";
-
+import FeedbackForm from "./pages/user/feedback";
+import AdminFeedback from "./pages/admin/feedbackMangment";
+import About from "./pages/user/about";
 
 function App() {
   return (
@@ -32,7 +34,13 @@ function App() {
         <Route path="/forgotEmail" element={<PublicRoute><ForgotPassword /></PublicRoute>} />
         <Route path="/reset-password" element={<PublicRoute><ResetPassword /></PublicRoute>} />
         <Route path="/adminLogin" element={<PublicRoute><AdminLogin /></PublicRoute>} />
+
+
+
         <Route path="/chat" element={<ChatDropdown />} />
+        <Route path="/feedback" element={<FeedbackForm />} />
+        <Route path="/feedbackManagement" element={<AdminFeedback />} />
+        <Route path="/about" element={<About />} />
 
 
 

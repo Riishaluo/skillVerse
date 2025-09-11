@@ -13,6 +13,7 @@ const User = require('../models/userModel')
 const alertController = require('../controller/alertController')
 const Message = require("../models/messageSchema");
 const otherProfile = require('../controller/otherProfile')
+const feedback = require('../controller/feedbackController')
 
 const uploadPost = multer({ storage: postStorage });
 const uploadProfile = multer({ storage: profileStorage });
@@ -121,6 +122,10 @@ router.put("/alerts/mark-all-read", userAuth, alertController.markAllAsRead);
 
 router.get("/profile/me", userAuth, profileController.getMe)
 router.get("/profile/:id", userAuth, otherProfile.getUserProfile)
+
+
+router.post("/feedback", userAuth, feedback.addFeedback);
+
 
 
 

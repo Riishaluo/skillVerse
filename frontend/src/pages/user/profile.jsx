@@ -12,7 +12,7 @@ const ProfileSection = () => {
     const [user, setUser] = useState(null)
     const [loading, setLoading] = useState(true)
 
-    const [bio, setBio] = useState("")  
+    const [bio, setBio] = useState("")
     const [isEditingBio, setIsEditingBio] = useState(false)
     const [tempBio, setTempBio] = useState("")
 
@@ -132,7 +132,7 @@ const ProfileSection = () => {
             console.error("Error toggling like:", err)
         }
     }
-    
+
     const handleComment = async (itemId, text) => {
         try {
             const res = await axios.post(
@@ -353,7 +353,6 @@ const ProfileSection = () => {
                     )}
                 </div>
 
-                {/* Posts/Events Tabs */}
                 <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                     <div className="flex border-b border-gray-100 bg-gray-50">
                         <button
@@ -489,7 +488,7 @@ const ProfileSection = () => {
                                         <div key={event._id} className="border border-gray-100 rounded-xl p-5 hover:shadow-md transition-all duration-300 bg-white">
                                             <div className="flex items-start gap-3 mb-4">
                                                 <div className="w-10 h-10 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full flex items-center justify-center text-white font-bold">
-                                        
+
                                                 </div>
                                                 <div className="flex-1">
                                                     <p className="text-gray-800 leading-relaxed mb-3">{event.description || "No description available"}</p>

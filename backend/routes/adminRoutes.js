@@ -7,7 +7,7 @@ const userManagement = require('../controller/adminUserController')
 const alertController = require('../controller/alertController')
 const userAuth = require('../middleware/userAuth')
 const dashboard = require('../controller/dashboard')
-
+const feedbackController = require('../controller/feedbackController')
 
 router.post("/adminLogin", adminLoginController.adminLogin)
 router.get("/dashboard", verifyAdmin, dashboard.getDashboardStats)
@@ -28,6 +28,8 @@ router.put("/block-user/:id",userManagement.blockUser)
 
 router.post("/send-alert/:userId", alertController.sendAlert);
 
+
+router.get("/feedbacks", feedbackController.getAllFeedbacks);
 
 
 router.post("/logout", (req, res) => {

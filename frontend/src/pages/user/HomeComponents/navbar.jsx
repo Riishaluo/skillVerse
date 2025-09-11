@@ -7,7 +7,8 @@ import {
   FaUsers,
   FaPlusCircle,
   FaSignOutAlt,
-  FaSearch,
+  FaCommentDots,
+  FaInfoCircle
 } from "react-icons/fa";
 import { IoMdClose } from "react-icons/io";
 import { HiOutlineMenuAlt3 } from "react-icons/hi";
@@ -21,19 +22,15 @@ import ChatDropdown from "../chat";
 import io from "socket.io-client";
 
 const Navbar = () => {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [unreadCount, setUnreadCount] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [unreadCount, setUnreadCount] = useState(0)
 
-  const { user, setUser } = useAuth();
-  const menuRef = useRef();
-  const searchRef = useRef();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { user, setUser } = useAuth()
+  const menuRef = useRef()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  // Fetch user info
   useEffect(() => {
     axios
       .get("http://localhost:9999/user/", { withCredentials: true })
@@ -41,7 +38,6 @@ const Navbar = () => {
       .catch(() => setUser(null));
   }, [location, setUser]);
 
-  // Real-time alerts
   useEffect(() => {
     if (!user?._id) return;
 
@@ -51,8 +47,7 @@ const Navbar = () => {
       .catch((err) => console.error(err));
 
     const socket = io("http://localhost:9999", { withCredentials: true });
-
-    socket.emit("join", user._id);
+    socket.emit("join", user._id)
 
     socket.on("receive-alert", (alert) => {
       if (alert.user === user._id) setUnreadCount((prev) => prev + 1);
@@ -61,18 +56,7 @@ const Navbar = () => {
     return () => socket.disconnect();
   }, [user]);
 
-  // Close menus on outside click
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) setMenuOpen(false);
-      if (searchRef.current && !searchRef.current.contains(e.target) && searchOpen) {
-        setSearchOpen(false);
-        setSearchQuery("");
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [searchOpen]);
+
 
   const handleUserIconClick = () => {
     if (!user) {
@@ -140,6 +124,14 @@ const Navbar = () => {
               badgeCount={unreadCount}
             />
           </Link>
+
+          <Link to="/feedback">
+            <NavItem icon={<FaCommentDots />} label="Feedback" isActive={location.pathname === "/feedback"} />
+          </Link>
+
+          <Link to="/about">
+            <NavItem icon={<FaInfoCircle />} label="About" isActive={location.pathname === "/about"} />
+          </Link>
         </nav>
 
         {user && !user.isPremium && (
@@ -152,69 +144,65 @@ const Navbar = () => {
       </aside>
 
       <header className="fixed top-0 right-0 left-0 md:left-64 bg-white text-white px-4 sm:px-6 py-3 flex justify-end items-center shadow-lg z-50">
-  <div className="flex items-center gap-4 relative" ref={menuRef}>
+        <div className="flex items-center gap-4 relative" ref={menuRef}>
+          <ChatDropdown user={user} />
+          <button
+            onClick={handleUserIconClick}
+            className="flex items-center gap-2 p-1.5 pl-2.5 rounded-full hover:bg-gray-300 transition-all"
+          >
+            {user?.avatar ? (
+              <img src={user.avatar} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
+            ) : (
+              <FaUserCircle className="text-2xl text-gray-700" />
+            )}
+            <span className="hidden lg:block text-sm font-medium text-black">
+              {user?.name || user?.email?.split("@")[0]}
+            </span>
+          </button>
 
-    <ChatDropdown user={user} />
+          <button
+            className="md:hidden ml-2 p-2 rounded-md hover:bg-blue-700"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <IoMdClose size={20} /> : <HiOutlineMenuAlt3 size={20} />}
+          </button>
 
-    <button
-      onClick={handleUserIconClick}
-      className="flex items-center gap-2 p-1.5 pl-2.5 rounded-full hover:bg-gray-300 transition-all"
-    >
-      {user?.avatar ? (
-        <img src={user.avatar} alt="Profile" className="w-8 h-8 rounded-full object-cover" />
-      ) : (
-        <FaUserCircle className="text-2xl text-gray-700" />
-      )}
-      <span className="hidden lg:block text-sm font-medium text-black">
-        {user?.name || user?.email?.split("@")[0]}
-      </span>
-    </button>
-
-    <button
-      className="md:hidden ml-2 p-2 rounded-md hover:bg-blue-700"
-      onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-    >
-      {mobileMenuOpen ? <IoMdClose size={20} /> : <HiOutlineMenuAlt3 size={20} />}
-    </button>
-
-    {/* Profile dropdown */}
-    {menuOpen && user && (
-      <div className="absolute right-0 top-12 bg-blue-800 text-white border border-blue-700 rounded-xl shadow-lg w-56 z-50 overflow-hidden py-1">
-        <div className="px-4 py-3 border-b border-blue-700 bg-blue-900">
-          <p className="text-xs font-medium text-blue-200">Signed in as</p>
-          <p className="text-sm text-white font-medium truncate">{user.email}</p>
+          {menuOpen && user && (
+            <div className="absolute right-0 top-12 bg-blue-800 text-white border border-blue-700 rounded-xl shadow-lg w-56 z-50 overflow-hidden py-1">
+              <div className="px-4 py-3 border-b border-blue-700 bg-blue-900">
+                <p className="text-xs font-medium text-blue-200">Signed in as</p>
+                <p className="text-sm text-white font-medium truncate">{user.email}</p>
+              </div>
+              <button
+                onClick={() => {
+                  navigate("/profile");
+                  setMenuOpen(false);
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-blue-700 transition-colors text-sm"
+              >
+                <FaUserCircle className="text-white" />
+                <span>Your Profile</span>
+              </button>
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-red-700 transition-colors text-sm"
+              >
+                <FaSignOutAlt className="text-white" />
+                <span>Sign Out</span>
+              </button>
+            </div>
+          )}
         </div>
-        <button
-          onClick={() => {
-            navigate("/profile");
-            setMenuOpen(false);
-          }}
-          className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-blue-700 transition-colors text-sm"
-        >
-          <FaUserCircle className="text-white" />
-          <span>Your Profile</span>
-        </button>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-red-700 transition-colors text-sm"
-        >
-          <FaSignOutAlt className="text-white" />
-          <span>Sign Out</span>
-        </button>
-      </div>
-    )}
-  </div>
-</header>
+      </header>
 
-    </div>
+    </div >
   );
 };
 
 const NavItem = ({ icon, label, isActive, badgeCount }) => (
   <div
-    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all ${
-      isActive ? "bg-blue-700 text-white font-medium" : "hover:bg-blue-800 text-white"
-    }`}
+    className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all ${isActive ? "bg-blue-700 text-white font-medium" : "hover:bg-blue-800 text-white"
+      }`}
   >
     <div className={`relative text-lg ${isActive ? "text-white" : "text-white"}`}>
       {icon}
@@ -228,4 +216,4 @@ const NavItem = ({ icon, label, isActive, badgeCount }) => (
   </div>
 );
 
-export default Navbar;
+export default Navbar
