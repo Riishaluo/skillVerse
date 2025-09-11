@@ -3,6 +3,7 @@ import Navbar from "./HomeComponents/navbar"
 import axios from "axios"
 import ConnectButton from "./reuseComponent/connection"
 import { FiMessageCircle, FiSearch, FiUser, FiStar } from "react-icons/fi"
+import { Link } from "react-router-dom"
 
 const Network = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -146,19 +147,17 @@ const UserCard = ({ user, currentUser }) => {
 
   const displayedSkills = showAllSkills
     ? user.skillsOffered
-    : user.skillsOffered.slice(0, 3)
+    : user.skillsOffered.slice(0,3)
 
   return (
     <div className="bg-white rounded-2xl p-6 border border-gray-200 transition-all hover:shadow-lg hover:-translate-y-1">
-      {/* User Header */}
       <div className="flex flex-col items-center text-center mb-5">
         <div className="relative mb-3">
-          <img
-            src={user.avatar || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
-            alt={user.name}
-            className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
-          />
-          {user.isPremium && (
+            <img
+              src={user.avatar || "https://cdn-icons-png.flaticon.com/512/847/847969.png"}
+              alt={user.name}
+              className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-md"
+            />          {user.isPremium && (
             <div className="absolute -top-1 -right-1 bg-yellow-400 rounded-full p-1">
               <FiStar className="text-white" size={14} />
             </div>
@@ -174,8 +173,6 @@ const UserCard = ({ user, currentUser }) => {
           )}
         </div>
       </div>
-
-      {/* Skills Section */}
       <div className="mb-6">
         <div className="flex flex-wrap gap-2 justify-center">
           {displayedSkills.map((skill, i) => (
@@ -197,8 +194,6 @@ const UserCard = ({ user, currentUser }) => {
           )}
         </div>
       </div>
-      
-      {/* Action Buttons */}
       <div className="flex items-center justify-between gap-3">
         <div className="flex-1">
           <ConnectButton

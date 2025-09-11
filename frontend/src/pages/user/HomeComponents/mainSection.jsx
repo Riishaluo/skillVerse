@@ -120,7 +120,9 @@ const PostCard = React.memo(({
                     <FaUserCircle className="w-10 h-10 text-gray-300" />
                 )}
                 <div>
+                    <Link to={`/profile/${item.createdBy._id}`}>
                     <h3 className="font-semibold text-gray-900 text-sm">{item.createdBy?.name || "Unknown User"}</h3>
+                    </Link>
                     <time
                         dateTime={item.createdAt}
                         className="text-gray-400 text-xs"

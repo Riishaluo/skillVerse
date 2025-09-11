@@ -4,6 +4,7 @@ import { IoIosSend } from "react-icons/io";
 import Swal from "sweetalert2";
 import axios from "axios";
 import useWebSocket from "../../hooks/useWebSocket";
+import { Link } from "react-router-dom";
 
 const ChatWindow = ({ receiver, onClose, user }) => {
   const [text, setText] = useState("");
@@ -184,12 +185,6 @@ const ChatDropdown = ({ user }) => {
         <div className="absolute right-0 top-12 w-80 bg-white shadow-lg border border-gray-200 rounded-xl z-50 overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex justify-between items-center">
             <h3 className="font-semibold text-gray-700">Messages</h3>
-            <button 
-              onClick={fetchFollowingChats}
-              className="text-xs text-indigo-600 hover:text-indigo-800"
-            >
-              Refresh
-            </button>
           </div>
           <div className="max-h-96 overflow-y-auto">
             {followingChats.length === 0 ? (

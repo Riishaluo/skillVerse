@@ -42,30 +42,11 @@ const Alerts = () => {
           withCredentials: true,
         });
 
-        let data = res.data;
-
-        const unreadFollow = data.filter(
-          (a) => a.type === "follow" && !a.isRead
-        );
-        if (unreadFollow.length > 0) {
-          await Promise.all(
-            unreadFollow.map((a) =>
-              axios.put(
-                `http://localhost:9999/user/alerts/${a._id}/read`,
-                {},
-                { withCredentials: true }
-              )
-            )
-          );
-          data = data.map((a) =>
-            a.type === "follow" ? { ...a, isRead: true } : a
-          );
-        }
-
+        let data = res.data.alerts || [];  
         setAlerts(data);
         setStats({
           total: data.length,
-          unread: data.filter((a) => !a.isRead).length,
+          unread: res.data.unreadCount || 0,
         });
       } catch (err) {
         console.error("Error fetching alerts:", err);
@@ -73,6 +54,7 @@ const Alerts = () => {
         setIsLoading(false);
       }
     };
+
     fetchAlerts();
   }, [user]);
 
@@ -94,18 +76,7 @@ const Alerts = () => {
 
   const markAllAsRead = async () => {
     try {
-      const unreadAlerts = alerts.filter(
-        (a) => !a.isRead && a.type === "admin"
-      );
-      await Promise.all(
-        unreadAlerts.map((a) =>
-          axios.put(
-            `http://localhost:9999/user/alerts/${a._id}/read`,
-            {},
-            { withCredentials: true }
-          )
-        )
-      );
+      await axios.put("http://localhost:9999/user/alerts/mark-all-read", {}, { withCredentials: true });
       setAlerts((prev) => prev.map((a) => ({ ...a, isRead: true })));
       setStats((prev) => ({ ...prev, unread: 0 }));
     } catch (err) {

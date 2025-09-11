@@ -117,7 +117,7 @@ router.get("/following-chats", userAuth, async (req, res) => {
 
 
 router.get("/alerts", userAuth,alertController.getUserAlerts)
-router.put("/alerts/:alertId/read",userAuth, alertController.markAsRead)
+router.put("/alerts/mark-all-read", userAuth, alertController.markAllAsRead);
 
 router.get("/profile/me", userAuth, profileController.getMe)
 router.get("/profile/:id", userAuth, otherProfile.getUserProfile)

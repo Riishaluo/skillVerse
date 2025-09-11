@@ -39,24 +39,28 @@ exports.getUserAlerts = async (req, res) => {
       .populate("sender", "name avatar")
       .sort({ createdAt: -1 });
 
-    res.json(alerts)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-}
+    const unreadCount = await Alert.countDocuments({
+      user: req.user.id,
+      isRead: false,
+    });
 
-exports.markAsRead = async (req, res) => {
-  try {
-    const { alertId } = req.params;
-    const alert = await Alert.findByIdAndUpdate(
-      alertId,
-      { isRead: true },
-      { new: true }
-    );
-    res.json(alert)
+    res.json({ alerts, unreadCount });
   } catch (err) {
-    res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message });
   }
-}
+};
+
+exports.markAllAsRead = async (req, res) => {
+  try {
+    await Alert.updateMany(
+      { user: req.user.id, isRead: false },  
+      { $set: { isRead: true } }
+    );
+    res.json({ success: true, message: "All alerts marked as read" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
 
 

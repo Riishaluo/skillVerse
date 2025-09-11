@@ -64,9 +64,10 @@ function initSocket(io) {
 
     socket.on("send-alert", async (data) => {
       try {
-        const { sender, receiver, title, description } = data;
+        const { user,sender, receiver, title, description } = data;
 
         const newAlert = await Alert.create({
+          user,
           sender,
           receiver,
           title,
