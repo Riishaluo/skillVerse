@@ -45,21 +45,22 @@ exports.sendOtpController = async (req, res) => {
     const otp = Math.floor(100000 + Math.random() * 900000).toString()
 
     await TempUser.findOneAndDelete({ email })
+    const expiry = new Date(Date.now() + 40 * 1000);
 
     await TempUser.create({
       name,
       email,
       password: hashedPassword,
       otp,
-      otpExpiresAt: new Date(Date.now() + 30 * 1000)
-    })
+      otpExpiresAt: expiry
+    });
 
     await sendOtp(email, otp)
 
-    res.status(200).json({ success: true })
+    res.status(200).json({ success: true, otpExpiresAt: expiry })
   } catch (err) {
     console.log(err)
-    res.status(500).json({ message: 'Server error' })
+    res.status(500).json({ message: 'Server error', })
   }
 }
 
@@ -67,8 +68,11 @@ exports.sendOtpController = async (req, res) => {
 exports.verifyOtpController = async (req, res) => {
   const { email, otp } = req.body
 
+  console.log(otp)
+
   try {
     const user = await TempUser.findOne({ email })
+    console.log(typeof user.otp)
 
     if (!user) return res.status(404).json({ message: 'No OTP found. Please resend.' })
 
@@ -212,27 +216,34 @@ exports.home = async (req, res) => {
 
 
 exports.resendOtpController = async (req, res) => {
-  const { email } = req.body
+  const { email } = req.body;
 
   try {
-    const user = await TempUser.findOne({ email })
+    const user = await TempUser.findOne({ email });
     if (!user) {
-      return res.status(404).json({ message: 'No registration found. Please register again.' })
+      return res.status(404).json({ message: 'No registration found. Please register again.' });
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString()
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 40 * 1000);
+
     user.otp = otp;
-    user.otpExpiresAt = new Date(Date.now() + 30 * 1000);
+    user.otpExpiresAt = expiry;
     await user.save();
 
     await sendOtp(email, otp);
 
-    res.status(200).json({ success: true, message: 'OTP resent successfully' });
+    res.status(200).json({
+      success: true,
+      message: 'OTP resent successfully',
+      otpExpiresAt: expiry 
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Server error' });
   }
 };
+
 
 
 exports.sendForgotPasswordOtp = async (req, res) => {

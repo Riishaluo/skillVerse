@@ -20,6 +20,7 @@ const OtpVerification = () => {
     if (!email) return navigate("/signup");
 
     const storedExpiry = localStorage.getItem("otpCooldownExpiry");
+
     if (storedExpiry) {
       const remaining = Math.floor((Number(storedExpiry) - Date.now()) / 1000);
       if (remaining > 0) {
@@ -27,8 +28,12 @@ const OtpVerification = () => {
         return;
       }
     }
-    startCooldown();
+
+    const expiry = Date.now() + 30 * 1000;
+    localStorage.setItem("otpCooldownExpiry", expiry);
+    setCooldown(30);
   }, [email, navigate]);
+
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -47,11 +52,12 @@ const OtpVerification = () => {
     return () => clearInterval(interval);
   }, [cooldown]);
 
-  const startCooldown = () => {
-    const expiry = Date.now() + 30 * 1000;
+  const startCooldown = (expiryFromServer) => {
+    const expiry = new Date(expiryFromServer).getTime();
     localStorage.setItem("otpCooldownExpiry", expiry);
-    setCooldown(30);
+    setCooldown(Math.floor((expiry - Date.now()) / 1000));
   };
+
 
   const handleChange = (index, value) => {
     if (/^\d?$/.test(value)) {
@@ -101,7 +107,8 @@ const OtpVerification = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }
+
 
   const handleResendOtp = async () => {
     try {
@@ -110,14 +117,18 @@ const OtpVerification = () => {
         flow === "forgotPassword"
           ? "http://localhost:9999/user/resend-forgot-otp"
           : "http://localhost:9999/user/resend-otp";
-          
+
       const response = await axios.post(endpoint, { email });
       setMessage(response.data.message);
-      startCooldown();
+
+      const newExpiry = Date.now() + 30 * 1000;
+      startCooldown(newExpiry);
     } catch (error) {
       setMessage(error.response?.data?.message || "Failed to resend OTP.");
     }
   };
+
+
 
   return (
     <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-indigo-100 to-purple-200">
